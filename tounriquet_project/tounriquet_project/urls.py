@@ -24,4 +24,5 @@ urlpatterns = [
     path('client/',include('client.urls')),
     path('clientAuth/',include('clientAuth.urls')),
     path('device/',include('device.urls')),
+    path('access/',include('access.urls')),
 ]

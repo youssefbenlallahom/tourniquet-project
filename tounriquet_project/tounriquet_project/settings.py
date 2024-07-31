@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'client',
     'clientAuth',
     'device',
+    'access',
 ]
 CORS_ORIGIN_ALLOW_ALL = True
 AUTH_USER_MODEL = 'user.User'

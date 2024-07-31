@@ -33,8 +33,8 @@ def add_device(request):
     if serializer.is_valid():
         if Device.objects.filter(**request.data).exists():
             raise serializers.ValidationError('This data already exists')
-
         serializer.save()
+        print(request.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -45,11 +45,11 @@ def delete_device(request, DeviceId):
     if not request.user.is_staff and not request.user.is_superuser:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
     try:
-        timezone = Device.objects.get(DeviceId=DeviceId)
+        device = Device.objects.get(id=DeviceId)
     except Device.DoesNotExist:
         return Response({'error': 'Device not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-    timezone.delete()
+    device.delete()
     return Response({'message': 'Device deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
 
 
