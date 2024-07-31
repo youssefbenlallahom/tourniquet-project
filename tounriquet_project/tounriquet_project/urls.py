@@ -25,4 +25,5 @@ urlpatterns = [
     path('clientAuth/',include('clientAuth.urls')),
     path('device/',include('device.urls')),
     path('access/',include('access.urls')),
+    path('door/',include('door.urls')),
 ]

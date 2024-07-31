@@ -1,50 +1,41 @@
 from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
-from .models import Access,Device
+from .models import Access
 from .serializers import AccessSerializer
 from rest_framework import serializers
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from access.serializers import AccessSerializer
 
 
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def view_access(request):
-    if not request.user.is_staff and not request.user.is_superuser:
-        return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
+    serializer = AccessSerializer(data=request.data, many=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    if 'DeviceId' in request.query_params:
-        DeviceId = request.query_params.get('DeviceId')
-        try:
-            device = Device.objects.get(id=DeviceId)
-        except Device.DoesNotExist:
-            return Response({'error': 'Device not found.'}, status=status.HTTP_404_NOT_FOUND)
-        
-        items = Access.objects.filter(device=device)
-    else:
-        items = Access.objects.all()
-
-    if items.exists():
-        serializer = AccessSerializer(items, many=True)
-        return Response(serializer.data)
-    else:
-        return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_access(request):
-    serializer = AccessSerializer(data=request.data)
+    if not isinstance(request.data, list):
+        return Response({'error': 'Invalid data. Expected a list of access objects.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    serializer = AccessSerializer(data=request.data, many=True)
+    
     if not request.user.is_staff and not request.user.is_superuser:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
+    
     if serializer.is_valid():
-        if Access.objects.filter(**request.data).exists():
-            raise serializers.ValidationError('This data already exists')
+
         serializer.save()
-        print(request.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    else:
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
