@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     'user',
     'timezone',
     'client',
-    'clientAuth'
+    'clientAuth',
+    'device',
 ]
 CORS_ORIGIN_ALLOW_ALL = True
 AUTH_USER_MODEL = 'user.User'
@@ -62,6 +63,8 @@ REST_FRAMEWORK = {
     ]
     
 }
+ALLOWED_HOSTS = ['*']
+
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),

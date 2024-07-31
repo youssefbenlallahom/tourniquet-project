@@ -23,4 +23,5 @@ urlpatterns = [
     path('timezone/',include('timezone.urls')),
     path('client/',include('client.urls')),
     path('clientAuth/',include('clientAuth.urls')),
+    path('device/',include('device.urls')),
 ]
