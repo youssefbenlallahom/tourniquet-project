@@ -14,10 +14,10 @@ def view_access(request):
     if not request.user.is_staff and not request.user.is_superuser:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
 
-    if 'device_id' in request.query_params:
-        device_id = request.query_params.get('device_id')
+    if 'DeviceId' in request.query_params:
+        DeviceId = request.query_params.get('DeviceId')
         try:
-            device = Device.objects.get(id=device_id)
+            device = Device.objects.get(id=DeviceId)
         except Device.DoesNotExist:
             return Response({'error': 'Device not found.'}, status=status.HTTP_404_NOT_FOUND)
         

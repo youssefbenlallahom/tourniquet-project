@@ -11,4 +11,4 @@ class Access(models.Model):
     num_port= models.IntegerField()
     
     def __str__(self):
-        return f"Device {self.DeviceId}"
+        return f"Access {self.device}"
