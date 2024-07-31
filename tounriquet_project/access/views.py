@@ -48,11 +48,11 @@ def add_access(request):
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
-def delete_access(request, AccessId):
+def delete_access(request, id):
     if not request.user.is_staff and not request.user.is_superuser:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
     try:
-        access = Access.objects.get(id=AccessId)
+        access = Access.objects.get(id=id)
     except Access.DoesNotExist:
         return Response({'error': 'Access not found.'}, status=status.HTTP_404_NOT_FOUND)
 

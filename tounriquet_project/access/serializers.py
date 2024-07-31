@@ -6,4 +6,4 @@ class AccessSerializer(serializers.ModelSerializer):
     device = serializers.PrimaryKeyRelatedField(queryset=Device.objects.all())
     class Meta:
         model = Access
-        fields = ['id','name','status','num_port','device']
+        fields = '__all__'
