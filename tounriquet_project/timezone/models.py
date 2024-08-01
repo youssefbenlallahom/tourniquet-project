@@ -1,7 +1,8 @@
 from django.db import models
-
+from access.models import Access
 class Timezone(models.Model):
     TimezoneId = models.AutoField(primary_key=True)
+    access = models.ForeignKey(Access, related_name='access', on_delete=models.CASCADE)
     SunTime1 = models.CharField(max_length=4)
     SunTime2 = models.CharField(max_length=4, default="0000")
     SunTime3 = models.CharField(max_length=4, default="0000")

@@ -26,4 +26,5 @@ urlpatterns = [
     path('device/',include('device.urls')),
     path('access/',include('access.urls')),
     path('door/',include('door.urls')),
+    path('role/',include('role.urls')),
 ]

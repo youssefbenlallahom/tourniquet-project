@@ -1,11 +1,12 @@
 from rest_framework import serializers
 from .models import Timezone
-
+from access.serializers import AccessSerializer
 class TimezoneSerializer(serializers.ModelSerializer):
+    
     class Meta:
         model = Timezone
         fields = [
-            'TimezoneId',
+            'TimezoneId','access',
             'SunTime1', 'SunTime2', 'SunTime3',
             'MonTime1', 'MonTime2', 'MonTime3',
             'TueTime1', 'TueTime2', 'TueTime3',
