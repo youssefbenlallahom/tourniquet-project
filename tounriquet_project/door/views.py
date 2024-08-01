@@ -27,14 +27,12 @@ def view_door(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_door(request):
-    serializer = DoorSerializer(data=request.data)
     if not request.user.is_staff and not request.user.is_superuser:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
+
+    serializer = DoorSerializer(data=request.data)
     if serializer.is_valid():
-        if Door.objects.filter(**request.data).exists():
-            raise serializers.ValidationError('This data already exists')
-        serializer.save()
-        print(request.data)
+        door = serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

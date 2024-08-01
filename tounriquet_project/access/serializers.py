@@ -1,13 +1,15 @@
-# access/serializers.py
 from rest_framework import serializers
-from access.models import Access
-from device.models import Device
-from door.models import Door
+from .models import Access
+from door.serializers import DoorSerializer
 
 class AccessSerializer(serializers.ModelSerializer):
-    device = serializers.PrimaryKeyRelatedField(queryset=Device.objects.all())
-    door = serializers.PrimaryKeyRelatedField(queryset=Door.objects.all())
+    door_list = serializers.SerializerMethodField()  # Custom field for related doors
 
     class Meta:
         model = Access
-        fields = ['id', 'device', 'door', 'type', 'port']
+        fields = ['id','name', 'door_list']
+
+    def get_door_list(self, obj):
+        # Serialize the related Door instances
+        doors = obj.doors.all()  # Use the related_name to access the doors
+        return DoorSerializer(doors, many=True).data
