@@ -3,13 +3,11 @@ from .models import Access
 from door.serializers import DoorSerializer
 
 class AccessSerializer(serializers.ModelSerializer):
-    door_list = serializers.SerializerMethodField()  # Custom field for related doors
-
+    door_list = serializers.SerializerMethodField()  
     class Meta:
         model = Access
         fields = ['id','name', 'door_list']
 
     def get_door_list(self, obj):
-        # Serialize the related Door instances
-        doors = obj.doors.all()  # Use the related_name to access the doors
+        doors = obj.doors.all()  
         return DoorSerializer(doors, many=True).data

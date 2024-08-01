@@ -32,20 +32,25 @@ def add_access(request):
     if not request.user.is_staff and not request.user.is_superuser:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
 
-    door_ids = request.data.get('door_ids', [])
+    door_ids = request.data.get('door', [])
     name = request.data.get('name', '')
 
-    if not isinstance(door_ids, list):
-        return Response({'error': 'door_ids must be a list.'}, status=status.HTTP_400_BAD_REQUEST)
+    if isinstance(door_ids, int):
+        door_ids = [door_ids]
+    elif not isinstance(door_ids, list):
+        return Response({'error': 'door_ids must be a list or a single integer.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    try:
-        doors = Door.objects.filter(id__in=door_ids)  # Fetch Door instances
-        access = Access.objects.create(name=name)     # Create Access instance
-        access.doors.set(doors)                       # Associate doors with Access instance
-        created_access = AccessSerializer(access).data
-        return Response({'access_list': [created_access]}, status=status.HTTP_201_CREATED)
-    except Door.DoesNotExist:
-        return Response({'error': 'One or more doors do not exist.'}, status=status.HTTP_400_BAD_REQUEST)
+    # Fetch doors
+    doors = Door.objects.filter(id__in=door_ids)
+
+    # Retrieve or create the Access object
+    access, created = Access.objects.get_or_create(name=name)
+
+    # Add new doors to the Access object
+    access.doors.add(*doors)
+
+    created_access = AccessSerializer(access).data
+    return Response({'access_list': [created_access]}, status=status.HTTP_201_CREATED)
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
