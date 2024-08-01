@@ -27,4 +27,5 @@ urlpatterns = [
     path('access/',include('access.urls')),
     path('door/',include('door.urls')),
     path('role/',include('role.urls')),
+    path('assignment/',include('assignment.urls')),
 ]
