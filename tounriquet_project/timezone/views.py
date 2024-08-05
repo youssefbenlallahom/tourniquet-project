@@ -33,7 +33,7 @@ def add_timezones(request):
     if serializer.is_valid():
         if Timezone.objects.filter(**request.data).exists():
             raise serializers.ValidationError('This data already exists')
-
+        print(request.data)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     else:
