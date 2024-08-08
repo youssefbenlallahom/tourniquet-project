@@ -28,4 +28,6 @@ urlpatterns = [
     path('door/',include('door.urls')),
     path('role/',include('role.urls')),
     path('assignment/',include('assignment.urls')),
+    path('userRole/',include('userRole.urls')),
+    path('bracelet/',include('bracelet.urls')),
 ]
