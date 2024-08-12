@@ -7,23 +7,40 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 import datetime
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def view_bracelet(request):
     if not request.user.is_staff and not request.user.is_superuser:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
 
-    if request.query_params:
-        items = Bracelet.objects.filter(**request.query_params.dict())
+    query_params = request.query_params
+    if query_params:
+        search_criteria = {}
+        # Iterate over possible fields for filtering
+        if 'num' in query_params:
+            search_criteria['num__icontains'] = query_params['num']
+        if 'bracelet_id' in query_params:
+            search_criteria['bracelet_id__icontains'] = query_params['bracelet_id']
+        if 'active' in query_params:
+            search_criteria['active'] = query_params['active'].lower() == 'true'
+        if 'color' in query_params:
+            search_criteria['color__icontains'] = query_params['color']
+        if 'add_date' in query_params:
+            try:
+                search_criteria['add_date__date'] = datetime.datetime.strptime(query_params['add_date'], '%Y-%m-%d').date()
+            except ValueError:
+                return Response({'error': 'Invalid date format. Use YYYY-MM-DD.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        items = Bracelet.objects.filter(**search_criteria)
     else:
         items = Bracelet.objects.all()
  
-    if items:
+    if items.exists():
         serializer = BraceletSerializer(items, many=True)
         return Response(serializer.data)
     else:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-
+        return Response({'message': 'No bracelets found matching the criteria.'}, status=status.HTTP_404_NOT_FOUND)
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_bracelet(request):
