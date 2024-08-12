@@ -11,6 +11,7 @@ import Calendar from './Calendar';
 import Access from './access/Access';
 import Role from './Role';
 import Assignment from './Assignment';
+import Bracelet from './bracelet/Bracelet';
 
 
 const Dashboard = ({ onLogout }) => {
@@ -29,6 +30,8 @@ const Dashboard = ({ onLogout }) => {
           <Route path="access" element={<Access />} />
           <Route path="role" element={<Role />} /> 
           <Route path="assignment" element={<Assignment />} /> {}
+          <Route path="bracelet" element={<Bracelet />} />  {}
+
 
 
           

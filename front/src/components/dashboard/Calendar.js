@@ -149,6 +149,8 @@ const Calendar = () => {
           variant="contained"
           color="secondary"
           onClick={() => setOpen(true)}
+          sx={{ mb: -3, maxWidth: '190px', fontSize: '16px' }} 
+
         >
           Create Timezone
         </Button>

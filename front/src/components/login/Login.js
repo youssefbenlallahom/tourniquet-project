@@ -10,7 +10,7 @@ const Login = ({ onLogin }) => {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post('http://10.107.24.25:8000/user/login/', {
+      const response = await axios.post('http://127.0.0.1:8000/user/login/', {
         username: email,
         password: password,
       });

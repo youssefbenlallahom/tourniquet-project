@@ -1,8 +1,7 @@
-// src/components/dashboard/Sidebar.js
 import React from 'react';
 import { Nav } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { FaHome, FaCalendarAlt, FaCog, FaSlidersH , FaKey , FaUsers , FaTasks } from 'react-icons/fa';
+import { FaHome, FaCalendarAlt, FaCog, FaSlidersH, FaKey, FaUsers, FaTasks, FaLink } from 'react-icons/fa';
 
 const Sidebar = () => {
   return (
@@ -24,22 +23,21 @@ const Sidebar = () => {
         <Nav.Link as={Link} to="config" className="text-white">
           <FaCog className="me-2" /> Devices Config
         </Nav.Link>
-        <Nav.Link as={Link} to="access" className="text-white"> {/* Add link to Access */}
+        <Nav.Link as={Link} to="access" className="text-white">
           <FaKey className="me-2" /> Access/Config
         </Nav.Link>
-
         <Nav.Link as={Link} to="role" className="text-white">
           <FaUsers className="me-2" /> Config User/Role
         </Nav.Link>
-
         <Nav.Link as={Link} to="calendar" className="text-white">
           <FaCalendarAlt className="me-2" /> TimeZone/Config
         </Nav.Link>
-
         <Nav.Link as={Link} to="assignment" className="text-white">
           <FaTasks className="me-2" /> Assignments
         </Nav.Link>
-       
+        <Nav.Link as={Link} to="bracelet" className="text-white">  {/* Add Bracelet Link */}
+          <FaLink className="me-2" /> Bracelet Management
+        </Nav.Link>
         <Nav.Link as={Link} to="settings" className="text-white">
           <FaSlidersH className="me-2" /> Settings
         </Nav.Link>
