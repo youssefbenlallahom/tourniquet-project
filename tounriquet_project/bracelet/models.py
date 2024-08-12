@@ -3,10 +3,21 @@ from django.utils import timezone
 import datetime
 
 class Bracelet(models.Model):
+    POPULAR_COLORS = [
+        ('red', 'Red'), ('blue', 'Blue'), ('green', 'Green'), ('yellow', 'Yellow'),
+        ('black', 'Black'), ('white', 'White'), ('orange', 'Orange'), ('purple', 'Purple'),
+        ('pink', 'Pink'), ('brown', 'Brown'), ('gray', 'Gray'), ('cyan', 'Cyan'),
+        ('magenta', 'Magenta'), ('lime', 'Lime'), ('indigo', 'Indigo'), ('violet', 'Violet'),
+        ('gold', 'Gold'), ('silver', 'Silver'), ('maroon', 'Maroon'), ('navy', 'Navy'),
+        ('olive', 'Olive'), ('teal', 'Teal'), ('aqua', 'Aqua'), ('fuchsia', 'Fuchsia'),
+        ('coral', 'Coral'), ('salmon', 'Salmon'), ('khaki', 'Khaki'), ('turquoise', 'Turquoise'),
+        ('plum', 'Plum'), ('orchid', 'Orchid'), ('sienna', 'Sienna')
+    ]
+
     num = models.IntegerField(unique=True, blank=True, null=True)
     bracelet_id = models.CharField(max_length=50)
     active = models.BooleanField(null=False)
-    color = models.CharField(max_length=50)
+    color = models.CharField(max_length=50, choices=POPULAR_COLORS)
     add_date = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):

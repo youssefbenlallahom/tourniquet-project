@@ -17,7 +17,6 @@ def view_bracelet(request):
     query_params = request.query_params
     if query_params:
         search_criteria = {}
-        # Iterate over possible fields for filtering
         if 'num' in query_params:
             search_criteria['num__icontains'] = query_params['num']
         if 'bracelet_id' in query_params:
@@ -41,6 +40,8 @@ def view_bracelet(request):
         return Response(serializer.data)
     else:
         return Response({'message': 'No bracelets found matching the criteria.'}, status=status.HTTP_404_NOT_FOUND)
+    
+    
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_bracelet(request):
