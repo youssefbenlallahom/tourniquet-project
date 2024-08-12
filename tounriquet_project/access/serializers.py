@@ -3,7 +3,6 @@ from .models import Access
 from door.serializers import DoorSerializer
 
 class AccessSerializer(serializers.ModelSerializer):
-    door_list = serializers.SerializerMethodField()  
     class Meta:
         model = Access
         fields = '__all__'

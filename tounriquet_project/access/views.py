@@ -32,23 +32,28 @@ def add_access(request):
     if not request.user.is_staff and not request.user.is_superuser:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
 
-    door_ids = request.data.get('door', [])
+    access_id = request.data.get('id')
+    door_ids = request.data.get('doors', [])
     name = request.data.get('name', '')
 
     if isinstance(door_ids, int):
         door_ids = [door_ids]
     elif not isinstance(door_ids, list):
-        return Response({'error': 'door_ids must be a list or a single integer.'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'doors must be a list or a single integer.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Fetch doors
+    if access_id:
+        try:
+            access = Access.objects.get(id=access_id)
+        except Access.DoesNotExist:
+            return Response({'error': 'Access object not found.'}, status=status.HTTP_404_NOT_FOUND)
+    else:
+        access = Access.objects.get_or_create(name=name)
+
     doors = Door.objects.filter(id__in=door_ids)
 
-    # Retrieve or create the Access object
-    access, created = Access.objects.get_or_create(name=name)
-
-    # Add new doors to the Access object
-    access.doors.add(*doors)
-
+    access.name = name
+    access.save()
+    access.doors.set(doors)  
     created_access = AccessSerializer(access).data
     return Response({'access_list': [created_access]}, status=status.HTTP_201_CREATED)
 
