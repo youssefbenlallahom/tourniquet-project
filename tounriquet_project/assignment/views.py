@@ -29,6 +29,8 @@ def view_assignment(request):
 def add_assignment(request):
     if not request.user.is_staff and not request.user.is_superuser:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
+    if not request.data:
+        return Response({'error': 'No data provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
     serializer = AssignmentSerializer(data=request.data)
     if serializer.is_valid():
@@ -93,6 +95,8 @@ def view_assignment_access(request):
 def add_assignment_access(request):
     if not request.user.is_staff and not request.user.is_superuser:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
+    if not request.data:
+        return Response({'error': 'No data provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
     serializer = Assignment_AccessSerializer(data=request.data)
     if serializer.is_valid():
@@ -103,11 +107,11 @@ def add_assignment_access(request):
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
-def delete_assignment_access(request, AssignmentId):
+def delete_assignment_access(request, Assignment_accessId):
     if not request.user.is_staff and not request.user.is_superuser:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
     try:
-        assignment = Assignment_Access.objects.get(id=AssignmentId)
+        assignment = Assignment_Access.objects.get(id=Assignment_accessId)
     except Assignment_Access.DoesNotExist:
         return Response({'error': 'Assignment not found.'}, status=status.HTTP_404_NOT_FOUND)
 

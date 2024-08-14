@@ -34,7 +34,6 @@ def add_device(request):
         if Device.objects.filter(**request.data).exists():
             raise serializers.ValidationError('This data already exists')
         serializer.save()
-        print(request.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

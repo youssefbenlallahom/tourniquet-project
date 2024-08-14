@@ -8,7 +8,7 @@ class DoorSerializer(serializers.ModelSerializer):
    
     class Meta:
         model = Door
-        fields = ['id', 'device', 'device_ip', 'device_name', 'type', 'port', 'doorNumber']
+        fields = '__all__'
 
     def create(self, validated_data):
         device = validated_data.pop('device')
