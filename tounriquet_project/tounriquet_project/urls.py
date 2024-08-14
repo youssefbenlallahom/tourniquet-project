@@ -21,8 +21,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('user/',include('user.urls')),
     path('timezone/',include('timezone.urls')),
-    path('client/',include('client.urls')),
-    path('clientAuth/',include('clientAuth.urls')),
     path('device/',include('device.urls')),
     path('access/',include('access.urls')),
     path('door/',include('door.urls')),
