@@ -43,8 +43,6 @@ INSTALLED_APPS = [
     'corsheaders',
     'user',
     'timezone',
-    'client',
-    'clientAuth',
     'device',
     'access',
     'door',
