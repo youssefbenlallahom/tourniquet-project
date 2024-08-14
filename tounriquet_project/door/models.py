@@ -5,4 +5,4 @@ class Door(models.Model):
     type = models.CharField(max_length=5, choices=[('E', 'e'), ('S', 's'), ("E/S", 'e/s')])
     doorNumber=models.IntegerField()
     def __str__(self):
-        return f"Door {self.type}"
+        return f"Door {self.device}"
