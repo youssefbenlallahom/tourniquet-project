@@ -1,8 +1,12 @@
 front/
-venv/
+
 
 git add tourniquet_project/
 
-git commit -m "commited"
+git commit -m "backend commited"
+
+git add venv/
+
+git commit -m "venv commited"
 
 git push origin main
