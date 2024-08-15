@@ -14,10 +14,10 @@ const Config = () => {
       try {
         const response = await axiosInstance.get('/device/all/');
         setDevices(response.data.map(device => ({
-          id: device.DeviceId,
-          ip: device.device_ip,
-          name: device.device_name,
-          ports: device.nb_port,
+          id: device.DeviceId,           // 'DeviceId' is used as the unique identifier
+          ip: device.device_ip,          // 'device_ip' corresponds to 'ip' in the frontend
+          port: device.port,             // 'port' field
+          doors: device.nb_doors,        // 'nb_doors' corresponds to 'doors' in the frontend
         })));
       } catch (error) {
         console.error('Error fetching devices:', error);
@@ -31,16 +31,16 @@ const Config = () => {
     setDevices([...devices, {
       id: device.DeviceId, // Use the ID from the response
       ip: device.device_ip,
-      name: device.device_name,
-      ports: device.nb_port,
+      port: device.port,
+      doors: device.nb_doors,
     }]);
   };
 
   const columns = [
     { field: 'id', headerName: 'ID', width: 90 },
     { field: 'ip', headerName: 'IP Address', width: 150 },
-    { field: 'name', headerName: 'Device Name', width: 150 },
-    { field: 'ports', headerName: 'Number of Ports', width: 150 },
+    { field: 'port', headerName: 'Port', width: 150 },
+    { field: 'doors', headerName: 'Number of Doors', width: 150 },
   ];
 
   return (

@@ -4,16 +4,16 @@ import axiosInstance from '../../../axiosInstance'; // Adjust the path if needed
 
 const AddDeviceModal = ({ open, onClose, onAddDevice }) => {
   const [deviceIp, setDeviceIp] = useState('');
-  const [deviceName, setDeviceName] = useState('');
-  const [portCount, setPortCount] = useState('');
+  const [port, setPort] = useState('4307'); // Default value set to 4307
+  const [doorCount, setDoorCount] = useState('');
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     const newDevice = {
       device_ip: deviceIp,
-      device_name: deviceName,
-      nb_port: parseInt(portCount, 10),
+      port: port,
+      nb_doors: parseInt(doorCount, 10), // Update field name
     };
 
     try {
@@ -22,8 +22,8 @@ const AddDeviceModal = ({ open, onClose, onAddDevice }) => {
         onAddDevice(response.data);
         onClose();
         setDeviceIp('');
-        setDeviceName('');
-        setPortCount('');
+        setPort('4307'); // Reset to default value
+        setDoorCount('');
       } else {
         console.error('Failed to add device:', response.statusText);
       }
@@ -69,22 +69,22 @@ const AddDeviceModal = ({ open, onClose, onAddDevice }) => {
           </Box>
           <Box mb={2}>
             <TextField
-              label="Device Name"
+              label="Port"
               variant="outlined"
               fullWidth
-              value={deviceName}
-              onChange={(e) => setDeviceName(e.target.value)}
+              value={port}
+              onChange={(e) => setPort(e.target.value)}
               required
             />
           </Box>
           <Box mb={2}>
             <TextField
-              label="Number of Ports"
+              label="Number of Doors"
               variant="outlined"
               type="number"
               fullWidth
-              value={portCount}
-              onChange={(e) => setPortCount(e.target.value)}
+              value={doorCount}
+              onChange={(e) => setDoorCount(e.target.value)}
               required
             />
           </Box>

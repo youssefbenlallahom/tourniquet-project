@@ -1,8 +1,7 @@
-// src/components/dashboard/assignment/Assignment.js
 import React, { useState, useEffect } from 'react';
 import { Box, Button, MenuItem, Select, TextField, Typography, Modal, FormControl, InputLabel, List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, Divider, Card, CardContent } from '@mui/material';
-import { Delete, Add as AddIcon } from '@mui/icons-material';
-import axiosInstance from '../../axiosInstance'; // Adjust the import path if necessary
+import { Delete } from '@mui/icons-material';
+import axiosInstance from '../../axiosInstance'; 
 
 const Assignment = () => {
   const [open, setOpen] = useState(false);
@@ -16,7 +15,6 @@ const Assignment = () => {
   const [gameDuration, setGameDuration] = useState('');
 
   useEffect(() => {
-    // Fetch assignments from the backend API
     const fetchAssignments = async () => {
       try {
         const response = await axiosInstance.get('/assignment/all/');
@@ -26,7 +24,6 @@ const Assignment = () => {
       }
     };
 
-    // Fetch roles from the backend API
     const fetchRoles = async () => {
       try {
         const response = await axiosInstance.get('/role/all/');
@@ -54,14 +51,14 @@ const Assignment = () => {
       const response = await axiosInstance.post('/assignment/create/', newAssignment);
       if (response.status === 201) {
         console.log('Assignment created successfully:', response.data);
-        setOpen(false); // Close the modal
+        setOpen(false); 
         setBraceletId('');
         setColor('');
         setSelectedRole('');
         setStartTime('');
         setGameName('');
         setGameDuration('');
-        setAssignments([...assignments, response.data]); // Update assignments list
+        setAssignments([...assignments, response.data]);
       } else {
         console.error('Failed to create assignment:', response.statusText);
       }
@@ -73,9 +70,9 @@ const Assignment = () => {
   const handleRemoveAssignment = async (assignmentId) => {
     try {
       const response = await axiosInstance.delete(`/assignment/delete/${assignmentId}/`);
-      if (response.status === 204) { // Assuming 204 status code for successful deletion
+      if (response.status === 204) { 
         console.log('Assignment removed successfully');
-        setAssignments(assignments.filter(assignment => assignment.id !== assignmentId)); // Remove assignment from the list
+        setAssignments(assignments.filter(assignment => assignment.id !== assignmentId)); 
       } else {
         console.error('Failed to remove assignment:', response.statusText);
       }

@@ -15,7 +15,7 @@ const Login = ({ onLogin }) => {
         password: password,
       });
 
-      console.log('Response:', response); // Log the entire response
+      console.log('Response:', response);
 
       if (response.status === 200) {
         const { token, user } = response.data;

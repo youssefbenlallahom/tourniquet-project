@@ -26,7 +26,7 @@ const Door = ({ open, onClose, onDoorAdded }) => {
 
   const handleAddDoor = async () => {
     const newDoor = {
-      device: selectedDevice || '', // Assurez-vous que device n'est pas undefined
+      device: selectedDevice || '', 
       type: doorType,
       port: parseInt(port, 10),
       doorNumber: parseInt(doorNumber, 10),
