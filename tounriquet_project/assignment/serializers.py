@@ -1,9 +1,10 @@
 from rest_framework import serializers
-from .models import Assignment ,Assignment_Access
+from .models import Assignment ,Assignment_Access,Role
 from role.serializers import RoleSerializer
 
 class AssignmentSerializer(serializers.ModelSerializer):
-    role=RoleSerializer()
+    role = serializers.PrimaryKeyRelatedField(queryset=Role.objects.all())  # Ensure this handles Role IDs
+
     class Meta:
         model = Assignment
         fields = '__all__'

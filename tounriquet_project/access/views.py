@@ -37,7 +37,7 @@ def add_access(request):
     name = request.data.get('name', '')
 
     if isinstance(door_ids, int):
-        door_ids = [door_ids]
+        door_ids = [door_ids]  # Convert single integer to list
     elif not isinstance(door_ids, list):
         return Response({'error': 'doors must be a list or a single integer.'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -47,12 +47,14 @@ def add_access(request):
         except Access.DoesNotExist:
             return Response({'error': 'Access object not found.'}, status=status.HTTP_404_NOT_FOUND)
     else:
-        access = Access.objects.get_or_create(name=name)
+        access, created = Access.objects.get_or_create(name=name)
 
     doors = Door.objects.filter(id__in=door_ids)
 
     access.name = name
     access.save()
+
+    # Set the many-to-many relationship with the filtered doors
     access.doors.set(doors)  
     created_access = AccessSerializer(access).data
     return Response({'access_list': [created_access]}, status=status.HTTP_201_CREATED)

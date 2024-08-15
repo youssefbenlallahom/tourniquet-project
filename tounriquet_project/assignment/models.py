@@ -1,8 +1,10 @@
 from django.db import models
 from access.models import Access
 from timezone.models import Timezone
+from role.models import Role
 
 class Assignment(models.Model):
+    role=models.ForeignKey(Role, verbose_name=("AssignmentId"), on_delete=models.CASCADE,null=True,blank=True)
     braceletId = models.IntegerField()
     color=models.CharField(max_length=50)
     name=models.CharField(max_length=50)

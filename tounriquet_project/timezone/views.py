@@ -1,6 +1,6 @@
 from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
-from .models import Timezone
+from .models import Timezone ,Access
 from .serializers import TimezoneSerializer
 from rest_framework import serializers
 from rest_framework import status
@@ -27,13 +27,24 @@ def view_timezones(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_timezones(request):
-    serializer = TimezoneSerializer(data=request.data)
     if not request.user.is_staff and not request.user.is_superuser:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
+
+    # Handling multiple access IDs
+    access_ids = request.data.get('access', [])
+
+    if not isinstance(access_ids, list):
+        return Response({'error': 'access must be a list of integers.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Validate and process the timezone data
+    serializer = TimezoneSerializer(data=request.data)
     if serializer.is_valid():
-        if Timezone.objects.filter(**request.data).exists():
-            raise serializers.ValidationError('This data already exists')
-        print(request.data)
+        for access_id in access_ids:
+            # Assuming Access is a related model and you need to handle it somehow
+            # You might want to check if each access ID exists or link them
+            if not Access.objects.filter(id=access_id).exists():
+                return Response({'error': f'Access ID {access_id} does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
+        
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     else:

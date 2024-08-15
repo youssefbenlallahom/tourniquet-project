@@ -90,11 +90,13 @@ def view_assignment_access(request):
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_assignment_access(request):
     if not request.user.is_staff and not request.user.is_superuser:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
+
     if not request.data:
         return Response({'error': 'No data provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
