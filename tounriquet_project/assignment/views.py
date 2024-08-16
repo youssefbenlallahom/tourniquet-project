@@ -29,9 +29,7 @@ def view_assignment(request):
 def add_assignment(request):
     if not request.user.is_staff and not request.user.is_superuser:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
-    if not request.data:
-        return Response({'error': 'No data provided.'}, status=status.HTTP_400_BAD_REQUEST)
-
+    
     serializer = AssignmentSerializer(data=request.data)
     if serializer.is_valid():
         assignment = serializer.save()
@@ -97,14 +95,11 @@ def add_assignment_access(request):
     if not request.user.is_staff and not request.user.is_superuser:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
 
-    if not request.data:
-        return Response({'error': 'No data provided.'}, status=status.HTTP_400_BAD_REQUEST)
-
     serializer = Assignment_AccessSerializer(data=request.data)
     if serializer.is_valid():
         assignment = serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    else:
+    elif not request.data:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['DELETE'])

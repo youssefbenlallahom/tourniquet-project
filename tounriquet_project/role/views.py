@@ -27,6 +27,10 @@ def view_role(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_role(request):
+    serializer = RoleSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
     if not request.user.is_staff and not request.user.is_superuser:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
 

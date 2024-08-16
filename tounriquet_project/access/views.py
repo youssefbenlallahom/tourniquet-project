@@ -29,12 +29,16 @@ def view_access(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_access(request):
+    serializer = AccessSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     if not request.user.is_staff and not request.user.is_superuser:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
 
     access_id = request.data.get('id')
     door_ids = request.data.get('doors', [])
-    name = request.data.get('name', '')
+    GameName = request.data.get('GameName', '')
 
     if isinstance(door_ids, int):
         door_ids = [door_ids]  # Convert single integer to list
@@ -47,18 +51,17 @@ def add_access(request):
         except Access.DoesNotExist:
             return Response({'error': 'Access object not found.'}, status=status.HTTP_404_NOT_FOUND)
     else:
-        access, created = Access.objects.get_or_create(name=name)
+        access, created = Access.objects.get_or_create(GameName=GameName)
 
     doors = Door.objects.filter(id__in=door_ids)
 
-    access.name = name
+    access.GameName = GameName
     access.save()
 
     # Set the many-to-many relationship with the filtered doors
     access.doors.set(doors)  
     created_access = AccessSerializer(access).data
     return Response({'access_list': [created_access]}, status=status.HTTP_201_CREATED)
-
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_access(request, id):
