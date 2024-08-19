@@ -1,9 +1,11 @@
-front/
-
 
 git add tourniquet_project/
 
 git commit -m "backend commited"
+
+git add front/
+
+git commit -m "front commited"
 
 git add venv/
 

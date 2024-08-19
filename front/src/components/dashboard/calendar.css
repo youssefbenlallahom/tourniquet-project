@@ -1,0 +1,23 @@
+/* src/components/dashboard/Calendar.css */
+.planning-page {
+    padding: 20px;
+  }
+  
+  .datetime-picker-section {
+    margin-bottom: 20px;
+  }
+  
+  h3 {
+    margin-bottom: 10px;
+  }
+  
+  button.btn-primary {
+    margin-top: 20px;
+  }
+  
+  .confirmation-message {
+    margin-top: 20px;
+    color: green;
+    font-weight: bold;
+  }
+  
