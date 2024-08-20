@@ -6,7 +6,7 @@ import {
 import { Add as AddIcon, Delete, Edit, ExpandMore, ExpandLess } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../../axiosInstance';
-
+import Layout from '../../../Layout';
 const Access = () => {
   const [accesses, setAccesses] = useState([]);
   const [doorsMap, setDoorsMap] = useState({});
@@ -62,6 +62,7 @@ const Access = () => {
   };
 
   return (
+    <Layout>
     <Box p={2}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Typography variant="h4">Access Configuration</Typography>
@@ -156,6 +157,7 @@ const Access = () => {
         </TableContainer>
       )}
     </Box>
+    </Layout>
   );
 };
 

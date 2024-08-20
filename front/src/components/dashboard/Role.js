@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Button, MenuItem, Select, TextField, Typography, Modal, FormControl, InputLabel, List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, Divider, Card, CardContent } from '@mui/material';
 import { Delete, Add as AddIcon } from '@mui/icons-material';
 import axiosInstance from '../../axiosInstance'; 
-
+import Layout from '../../Layout';
 const Role = () => {
   const [open, setOpen] = useState(false);
   const [roles, setRoles] = useState([]);
@@ -79,6 +79,7 @@ const Role = () => {
   };
 
   return (
+    <Layout>
     <Box p={4}>
       <Box display="flex" justifyContent="space-between" mb={2}>
         <Button variant="contained" color="primary" onClick={() => setOpen(true)}>
@@ -177,6 +178,7 @@ const Role = () => {
         </List>
       </Box>
     </Box>
+    </Layout>
   );
 };
 

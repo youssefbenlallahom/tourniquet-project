@@ -7,7 +7,7 @@ import {
 } from '@mui/material';
 import { QrCodeScanner, Delete as DeleteIcon } from '@mui/icons-material';
 import axiosInstance from '../../../axiosInstance';
-
+import Layout from '../../../Layout';
 const Bracelet = () => {
     const [bracelets, setBracelets] = useState([]);
     const [braceletData, setBraceletData] = useState({
@@ -76,6 +76,7 @@ const Bracelet = () => {
     };
 
     return (
+        <Layout>
         <Container>
             <Box sx={{ textAlign: 'center', my: 4 }}>
                 <Typography variant="h4" component="h1" gutterBottom>
@@ -193,6 +194,7 @@ const Bracelet = () => {
                 />
             </Box>
         </Container>
+        </Layout>
     );
 };
 

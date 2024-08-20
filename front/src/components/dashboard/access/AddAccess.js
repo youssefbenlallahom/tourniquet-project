@@ -7,7 +7,7 @@ import {
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import axiosInstance from '../../../axiosInstance';
 import { useNavigate } from 'react-router-dom';
-
+import Layout from '../../../Layout';
 const AddAccess = () => {
   const [gameName, setGameName] = useState('');
   const [selectedDoors, setSelectedDoors] = useState([]);
@@ -101,6 +101,7 @@ const AddAccess = () => {
   };
 
   return (
+    <Layout>
     <Box p={4}>
       <Typography variant="h4" gutterBottom>Add New Access</Typography>
 
@@ -249,6 +250,7 @@ const AddAccess = () => {
         </Box>
       </Modal>
     </Box>
+    </Layout>
   );
 };
 

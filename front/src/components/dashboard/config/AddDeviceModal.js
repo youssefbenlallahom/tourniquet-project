@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Button, TextField, Typography, Modal, Paper } from '@mui/material';
 import axiosInstance from '../../../axiosInstance'; // Adjust the path if needed
-
+import Layout from '../../../Layout';
 const AddDeviceModal = ({ open, onClose, onAddDevice }) => {
   const [deviceIp, setDeviceIp] = useState('');
   const [port, setPort] = useState('4307'); // Default value set to 4307
@@ -41,6 +41,7 @@ const AddDeviceModal = ({ open, onClose, onAddDevice }) => {
   };
 
   return (
+    <Layout>
     <Modal open={open} onClose={onClose}>
       <Box
         component={Paper}
@@ -94,6 +95,7 @@ const AddDeviceModal = ({ open, onClose, onAddDevice }) => {
         </form>
       </Box>
     </Modal>
+    </Layout>
   );
 };
 
