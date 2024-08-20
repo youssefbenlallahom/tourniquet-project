@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import 'mdb-react-ui-kit/dist/css/mdb.min.css';
 import { MDBContainer, MDBRow, MDBCol, MDBCard, MDBCardBody, MDBInput, MDBBtn } from 'mdb-react-ui-kit';
 import axios from 'axios';
+import './Login.css'
 
 const Login = ({ onLogin }) => {
   const [email, setEmail] = useState('');
@@ -47,7 +48,6 @@ const Login = ({ onLogin }) => {
                 <MDBCardBody className="p-md-5 mx-md-4">
                   <div className="text-center">
                     <img src="/assets/logo.png" style={{ width: '185px' }} alt="logo" />
-                    <h4 className="mt-1 mb-5 pb-1">We are JUMPARK Team</h4>
                   </div>
                   <form>
                     <p>Please login to your account</p>
