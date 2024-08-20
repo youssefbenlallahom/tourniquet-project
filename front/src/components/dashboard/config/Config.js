@@ -3,7 +3,7 @@ import { Box, Button, Typography, Paper } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import AddDeviceModal from './AddDeviceModal';
 import axiosInstance from '../../../axiosInstance'; // Adjust the path if needed
-
+import Layout from '../../../Layout';
 const Config = () => {
   const [devices, setDevices] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -44,6 +44,7 @@ const Config = () => {
   ];
 
   return (
+    <Layout>
     <Box p={4}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Typography variant="h4">Devices</Typography>
@@ -60,6 +61,7 @@ const Config = () => {
         onAddDevice={handleAddDevice}
       />
     </Box>
+    </Layout>
   );
 };
 

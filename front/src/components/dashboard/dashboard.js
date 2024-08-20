@@ -10,7 +10,7 @@ import Sidebar from './Sidebar';
 import Calendar from './Calendar';
 import Access from './access/Access';
 import AddAccess from './access/AddAccess'; // Import AddAccess
-import Role from './Role';
+import Role from './role/Role';
 import Assignment from './Assignment';
 import Bracelet from './bracelet/Bracelet';
 
@@ -21,14 +21,14 @@ const Dashboard = ({ onLogout }) => {
     <div className="d-flex">
       <Sidebar />
       <Container fluid>
-        <Header username={username} onLogout={onLogout} />
-        <Routes>
+      <Header username={username} onLogout={onLogout} /> {/* Assurez-vous que `onLogout` est bien passé */}
+      <Routes>
           <Route path="home" element={<Home />} />
           <Route path="calendar" element={<Calendar />} />
           <Route path="config" element={<Config />} />
           <Route path="settings" element={<Settings />} />
           <Route path="access" element={<Access />} />
-          <Route path="access/new" element={<AddAccess />} /> {/* Add this route */}
+          <Route path="access/new" element={<AddAccess />} />
           <Route path="role" element={<Role />} /> 
           <Route path="assignment" element={<Assignment />} />
           <Route path="bracelet" element={<Bracelet />} />
@@ -37,5 +37,6 @@ const Dashboard = ({ onLogout }) => {
     </div>
   );
 };
+
 
 export default Dashboard;

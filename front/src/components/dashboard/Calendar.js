@@ -8,7 +8,7 @@ import moment from 'moment';
 import axiosInstance from '../../axiosInstance';
 import TimeZoneView from './TimeZoneView';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-
+import Layout from '../../Layout';
 const localizer = momentLocalizer(moment);
 
 const Calendar = () => {
@@ -128,6 +128,7 @@ const Calendar = () => {
   };
 
   return (
+    <Layout>
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Box display="flex" flexDirection="column" gap={2} p={3}>
         <Typography variant="h6">Select The Access and Create Timezone</Typography>
@@ -233,6 +234,7 @@ const Calendar = () => {
         </Modal>
       </Box>
     </LocalizationProvider>
+    </Layout>
   );
 };
 

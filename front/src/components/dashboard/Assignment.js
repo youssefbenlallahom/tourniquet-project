@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Button, MenuItem, Select, TextField, Typography, Modal, FormControl, InputLabel, List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, Divider, Card, CardContent } from '@mui/material';
 import { Delete } from '@mui/icons-material';
 import axiosInstance from '../../axiosInstance'; 
-
+import Layout from '../../Layout';
 const Assignment = () => {
   const [open, setOpen] = useState(false);
   const [assignments, setAssignments] = useState([]);
@@ -82,6 +82,7 @@ const Assignment = () => {
   };
 
   return (
+    <Layout>
     <Box p={4}>
       <Box display="flex" justifyContent="space-between" mb={2}>
         <Button variant="contained" color="primary" onClick={() => setOpen(true)}>
@@ -191,6 +192,7 @@ const Assignment = () => {
         </List>
       </Box>
     </Box>
+    </Layout>
   );
 };
 
