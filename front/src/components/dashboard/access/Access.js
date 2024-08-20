@@ -18,7 +18,6 @@ const Access = () => {
       try {
         const response = await axiosInstance.get('/access/all/');
         setAccesses(response.data);
-        // Fetch doors details if you need to map door IDs to details
         fetchDoors(response.data.flatMap(access => access.doors));
       } catch (error) {
         console.error('Error fetching accesses:', error);
@@ -28,7 +27,6 @@ const Access = () => {
 
     const fetchDoors = async (doorIds) => {
       try {
-        // Fetch doors details based on door IDs
         const response = await axiosInstance.get(`/door/all/`);
         const doors = response.data;
         const doorsMap = doors.reduce((map, door) => {
@@ -64,7 +62,7 @@ const Access = () => {
   };
 
   return (
-    <Box p={4}>
+    <Box p={2}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Typography variant="h4">Access Configuration</Typography>
         <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={() => navigate('/dashboard/access/new')}>
@@ -78,20 +76,20 @@ const Access = () => {
         </Typography>
       ) : (
         <TableContainer component={Paper}>
-          <Table>
+          <Table size="small">
             <TableHead>
               <TableRow>
-                <TableCell>Game Name</TableCell>
-                <TableCell>Doors</TableCell>
-                <TableCell>Actions</TableCell>
+                <TableCell align="left">Game Name</TableCell>
+                <TableCell align="left">Doors</TableCell>
+                <TableCell align="center">Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {accesses.map((access) => (
                 <React.Fragment key={access.id}>
-                  <TableRow>
-                    <TableCell>{access.GameName}</TableCell>
-                    <TableCell>
+                  <TableRow hover>
+                    <TableCell align="left">{access.GameName}</TableCell>
+                    <TableCell align="left">
                       {access.doors && access.doors.length > 1 ? (
                         <Box display="flex" alignItems="center">
                           <IconButton
@@ -112,7 +110,7 @@ const Access = () => {
                         }).join(', ')
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell align="center">
                       <Tooltip title="Edit Access">
                         <IconButton color="primary" onClick={() => handleUpdate(access.id)}>
                           <Edit />
@@ -128,8 +126,8 @@ const Access = () => {
                   {access.doors && access.doors.length > 1 && (
                     <TableRow>
                       <TableCell colSpan={3} sx={{ paddingBottom: 0, paddingTop: 0 }}>
-                        <Collapse in={openRows[access.id]}>
-                          <Box margin={2}>
+                        <Collapse in={openRows[access.id]} timeout="auto" unmountOnExit>
+                          <Box margin={1}>
                             {access.doors.map((doorId) => {
                               const door = doorsMap[doorId] || {};
                               return (
