@@ -88,7 +88,4 @@ const Header = ({ username, onLogout }) => {
   );
 };
 
-
-
-
 export default Header;

@@ -9,7 +9,6 @@ import '../src/components/dashboard/calendar.css';
 import AddRole from './components/dashboard/role/AddRole';
 import Role from './components/dashboard/role/Role';
 
-
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(
     () => JSON.parse(localStorage.getItem('isAuthenticated')) || false
@@ -44,7 +43,6 @@ const App = () => {
           <Route path="access/new" element={<AddAccess />} />
           <Route path="roles" element={<Role />} />
           <Route path="roles/new" element={<AddRole />} />
-
           {/* Other dashboard routes */}
         </Route>
         <Route path="/" element={<Navigate to="/login" />} />
@@ -54,4 +52,3 @@ const App = () => {
 };
 
 export default App;
-

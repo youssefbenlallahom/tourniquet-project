@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Button, MenuItem, Select, TextField, Typography, Modal, FormControl, InputLabel } from '@mui/material';
-import axiosInstance from '../../../axiosInstance'; // Ajustez le chemin d'importation si nécessaire
+import axiosInstance from '../../../axiosInstance'; // Adjust import path as needed
 
-const Door = ({ open, onClose, onDoorAdded }) => {
+const Door = ({ open, onClose, onDoorsConfirmed }) => {
   const [devices, setDevices] = useState([]);
-  const [selectedDevice, setSelectedDevice] = useState(''); // Initialisé comme une chaîne vide
+  const [selectedDevice, setSelectedDevice] = useState('');
   const [doorType, setDoorType] = useState('');
   const [port, setPort] = useState('');
   const [doorNumber, setDoorNumber] = useState('');
+  const [temporaryDoors, setTemporaryDoors] = useState([]);
 
   useEffect(() => {
-    // Récupérez les dispositifs depuis l'API backend
+    // Fetch devices from the backend
     const fetchDevices = async () => {
       try {
         const response = await axiosInstance.get('/device/all/');
@@ -24,26 +25,36 @@ const Door = ({ open, onClose, onDoorAdded }) => {
     fetchDevices();
   }, []);
 
-  const handleAddDoor = async () => {
+  const handleAddDoor = () => {
+    // Create a new door object
     const newDoor = {
-      device: selectedDevice || '', 
+      device: selectedDevice,
       type: doorType,
       port: parseInt(port, 10),
       doorNumber: parseInt(doorNumber, 10),
     };
 
+    // Add the new door to the temporary array
+    setTemporaryDoors([...temporaryDoors, newDoor]);
+
+    // Reset input fields
+    setSelectedDevice('');
+    setDoorType('');
+    setPort('');
+    setDoorNumber('');
+  };
+
+  const handleConfirmDoors = async () => {
     try {
-      const response = await axiosInstance.post('/door/create/', newDoor);
+      // Send the doors to the backend
+      const response = await axiosInstance.post('/door/create/', { doors: temporaryDoors });
       if (response.status === 201) {
-        console.log('Door created successfully:', response.data);
-        onClose(); // Fermez la fenêtre modale
-        onDoorAdded(); // Actualisez les portes dans le composant parent
-        setSelectedDevice('');
-        setDoorType('');
-        setPort('');
-        setDoorNumber('');
+        console.log('Doors created successfully:', response.data);
+        onDoorsConfirmed(); // Notify the parent component to refresh or update state
+        setTemporaryDoors([]); // Clear the temporary list
+        onClose(); // Close the modal
       } else {
-        console.error('Failed to create door:', response.statusText);
+        console.error('Failed to create doors:', response.statusText);
       }
     } catch (error) {
       console.error('Error:', error);
@@ -69,7 +80,7 @@ const Door = ({ open, onClose, onDoorAdded }) => {
         <FormControl fullWidth sx={{ mb: 2 }}>
           <InputLabel>Device</InputLabel>
           <Select
-            value={selectedDevice || ''} // Définir une valeur par défaut
+            value={selectedDevice}
             onChange={(e) => setSelectedDevice(e.target.value)}
           >
             {devices.map(device => (
@@ -108,6 +119,9 @@ const Door = ({ open, onClose, onDoorAdded }) => {
         />
         <Button variant="contained" color="primary" onClick={handleAddDoor}>
           Add Door
+        </Button>
+        <Button variant="contained" color="secondary" onClick={handleConfirmDoors} sx={{ mt: 2 }}>
+          Confirm Doors
         </Button>
       </Box>
     </Modal>

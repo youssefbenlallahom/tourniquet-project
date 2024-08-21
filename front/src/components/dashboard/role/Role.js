@@ -26,7 +26,7 @@ const Role = () => {
         <Typography variant="h4" gutterBottom>
           Roles
         </Typography>
-        <Button variant="contained" color="primary" onClick={() => navigate('/dashboard/role/new')}>
+        <Button variant="contained" color="primary" onClick={() => navigate('/dashboard/roles/new')}>
           Add Role
         </Button>
         <List>

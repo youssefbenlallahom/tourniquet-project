@@ -50,7 +50,7 @@ const Sidebar = () => {
     { text: 'Home', icon: <FaHome />, path: '/dashboard/home' },
     { text: 'Devices Config', icon: <FaCog />, path: '/dashboard/config' },
     { text: 'Access/Config', icon: <FaKey />, path: '/dashboard/access' },
-    { text: 'Config User/Role', icon: <FaUsers />, path: '/dashboard/role' },
+    { text: 'Config User/Role', icon: <FaUsers />, path: '/dashboard/roles' },
     { text: 'TimeZone/Config', icon: <FaCalendarAlt />, path: '/dashboard/calendar' },
     { text: 'Assignments', icon: <FaTasks />, path: '/dashboard/assignment' },
     { text: 'Bracelet Management', icon: <FaLink />, path: '/dashboard/bracelet' },
