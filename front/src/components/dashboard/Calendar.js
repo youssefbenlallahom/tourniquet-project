@@ -27,7 +27,7 @@ const Calendar = () => {
       try {
         const response = await axiosInstance.get('/access/all/');
         const accessMap = response.data.reduce((map, access) => {
-          map[access.id] = access.name;
+          map[access.id] = access.GameName; // Store GameName instead of name
           return map;
         }, {});
         setAccesses(response.data);
@@ -40,6 +40,7 @@ const Calendar = () => {
     fetchAccesses();
   }, []);
   
+  
 
   useEffect(() => {
     const fetchTimezones = async () => {
@@ -47,7 +48,7 @@ const Calendar = () => {
         const response = await axiosInstance.get('/timezone/all/');
         const fetchedEvents = response.data.map((timezone) => ({
           id: timezone.TimezoneId,
-          title: `Timezone for ${accessMap[timezone.access[0]] || 'Unknown Access'}`, // Handle multiple accesses
+          title: `Timezone for ${timezone.access.map(id => accessMap[id] || 'Unknown Access').join(', ')}`, // Use GameName
           start: new Date(timezone.startTime),
           end: new Date(timezone.endTime),
           accessId: timezone.access // Handle multiple accesses
@@ -57,6 +58,8 @@ const Calendar = () => {
         console.error('Error fetching timezones:', error);
       }
     };
+    
+    
     
 
     if (Object.keys(accessMap).length > 0) {
@@ -148,7 +151,7 @@ const Calendar = () => {
             >
               {accesses.map(access => (
                 <MenuItem key={access.id} value={access.id}>
-                  {access.name}
+                  {access.GameName}
                 </MenuItem>
               ))}
             </Select>
@@ -217,7 +220,7 @@ const Calendar = () => {
                 >
                   {accesses.map(access => (
                     <MenuItem key={access.id} value={access.id}>
-                      {access.name}
+                      {access.GameName}
                     </MenuItem>
                   ))}
                 </Select>

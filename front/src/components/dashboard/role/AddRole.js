@@ -34,7 +34,7 @@ const AddRole = () => {
       timezone: selectedTimezone,
       type,
     };
-
+  
     try {
       const response = await axiosInstance.post('/role/create/', newRole);
       if (response.status === 201) {
@@ -45,7 +45,7 @@ const AddRole = () => {
         setType('');
       }
     } catch (error) {
-      console.error('Error creating role:', error);
+      console.error('Error creating role:', error.response?.data || error.message);
     }
   };
 
@@ -74,7 +74,7 @@ const AddRole = () => {
               >
                 {accesses.map((access) => (
                   <MenuItem key={access.id} value={access.id}>
-                    {access.name}
+                    {access.GameName}
                   </MenuItem>
                 ))}
               </Select>
@@ -89,7 +89,7 @@ const AddRole = () => {
               >
                 {timezones.map((timezone) => (
                   <MenuItem key={timezone.id} value={timezone.id}>
-                    {timezone.name}
+                    {timezone.TimezoneId}
                   </MenuItem>
                 ))}
               </Select>
