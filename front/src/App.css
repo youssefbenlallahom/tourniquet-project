@@ -74,6 +74,6 @@
 
 .main-content {
   margin-top: 60px; /* Adjust based on the height of your header */
-  padding: 20px; /* Optional: Add padding for additional spacing */
+  padding: 10px; /* Optional: Add padding for additional spacing */
   position: relative;
 }
