@@ -6,6 +6,8 @@ import Access from './components/dashboard/access/Access';
 import AddAccess from './components/dashboard/access/AddAccess';
 import '../src/components/login/Login.css';
 import '../src/components/dashboard/calendar.css';
+import AddRole from './components/dashboard/role/AddRole';
+import Role from './components/dashboard/role/Role';
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(
@@ -20,6 +22,12 @@ const App = () => {
     setIsAuthenticated(status);
   };
 
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    localStorage.removeItem('token');
+    localStorage.setItem('isAuthenticated', JSON.stringify(false));
+  };
+
   return (
     <Router>
       <Routes>
@@ -29,10 +37,12 @@ const App = () => {
         />
         <Route
           path="/dashboard/*"
-          element={isAuthenticated ? <Dashboard onLogout={() => setIsAuthenticated(false)} /> : <Navigate to="/login" />}
+          element={isAuthenticated ? <Dashboard onLogout={handleLogout} /> : <Navigate to="/login" />}
         >
           <Route path="access" element={<Access />} />
           <Route path="access/new" element={<AddAccess />} />
+          <Route path="roles" element={<Role />} />
+          <Route path="roles/new" element={<AddRole />} />
           {/* Other dashboard routes */}
         </Route>
         <Route path="/" element={<Navigate to="/login" />} />

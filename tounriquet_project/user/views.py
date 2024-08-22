@@ -61,13 +61,14 @@ def register(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
 def logout(request):
     try:
-        token = Token.objects.get(user=request.user)
-        token.delete()
-        return Response({"success": "Déconnexion réussie."}, status=status.HTTP_200_OK)
-    except Token.DoesNotExist:
-        return Response({"error": "User has no auth_token."}, status=status.HTTP_400_BAD_REQUEST)
+        refresh_token = request.data.get("refresh")
+        if not refresh_token:
+            return Response({"detail": "Refresh token is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        token = RefreshToken(refresh_token)
+        token.blacklist()  # Assurez-vous que la fonctionnalité blacklist est activée
+        return Response(status=status.HTTP_205_RESET_CONTENT)
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)

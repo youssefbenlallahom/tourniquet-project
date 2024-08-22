@@ -29,6 +29,7 @@ def view_access(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_access(request):
+    print(request.data)
     serializer = AccessSerializer(data=request.data)
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

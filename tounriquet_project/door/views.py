@@ -33,10 +33,16 @@ def add_door(request):
     serializer = DoorSerializer(data=request.data)
     if serializer.is_valid():
         door = serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # Assuming serializer.data contains the id field
+        response_data = {
+            'id': door.id,
+            'device': door.device.DeviceId,
+            'type': door.type,
+            'doorNumber': door.doorNumber
+        }
+        return Response(response_data, status=status.HTTP_201_CREATED)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_door(request, DoorId):

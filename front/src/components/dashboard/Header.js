@@ -1,68 +1,60 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Navbar, Nav, NavDropdown, Container } from 'react-bootstrap';
 import { FaUserCircle, FaSignOutAlt } from 'react-icons/fa';
 import { styled } from '@mui/material/styles';
 
-// Define a custom styled Navbar
 const CustomNavbar = styled(Navbar)(({ theme }) => ({
-  background: 'linear-gradient(90deg, #000000, #AB1E24)', // Black to dark red gradient
-  borderBottom: '2px solid #AB1E24', // Red border for consistency
-  width: 'calc(100% - 250px)', // Adjust width to fit the viewport minus the sidebar width
-  marginLeft: '250px', // Align with the Sidebar
-  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
-  position: 'fixed', // Fixed position at the top
+  background: 'linear-gradient(90deg, #000000, #AB1E24)',
+  borderBottom: '2px solid #AB1E24',
+  width: 'calc(100% - 250px)',
+  marginLeft: '250px',
+  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+  position: 'fixed',
   top: 0,
   left: 0,
-  zIndex: 1030, // Ensure it's above other content
-  height: '60px', // Set a specific height for the header
+  zIndex: 1030,
+  height: '60px',
   '& .navbar-nav .nav-link': {
-    color: '#f5f5f5 !important', // Light gray text color
+    color: '#f5f5f5 !important',
     '&:hover': {
-      color: '#000000 !important', // Red color on hover
+      color: '#000000 !important',
     },
   },
   '& .navbar-toggler': {
-    borderColor: '#AB1E24', // Toggler border color
+    borderColor: '#AB1E24',
   },
   '& .navbar-toggler-icon': {
-    backgroundImage: 'url("data:image/svg+xml;charset=utf8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 30 30%22%3E%3Cpath stroke=%22%23AB1E24%22 stroke-width=%222%22 d=%22M0 7h30M0 15h30M0 23h30%22/%3E%3C/svg%3E")', // Toggler icon color
+    backgroundImage: 'url("data:image/svg+xml;charset=utf8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 30 30%22%3E%3Cpath stroke=%22%23AB1E24%22 stroke-width=%222%22 d=%22M0 7h30M0 15h30M0 23h30%22/%3E%3C/svg%3E")',
   },
 }));
 
 const CustomNavDropdown = styled(NavDropdown)(({ theme }) => ({
   '& .dropdown-menu': {
-    backgroundColor: '#1c1c1c', // Dark background for dropdown menu
-    color: '#f5f5f5', // Light gray text color
-    border: 'none', // Remove border
-    borderRadius: '8px', // Rounded corners
-    boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.3)', // Shadow for dropdown
-    transition: 'all 0.3s ease', // Smooth transition
-    maxWidth: '300px', // Maximum width to prevent overflow
-    right: 0, // Align to the right edge of the parent
-    left: 'auto', // Override left alignment
-    overflow: 'hidden', // Prevent content overflow
-    zIndex: 1040, // Ensure it appears above other content
+    backgroundColor: '#1c1c1c',
+    color: '#f5f5f5',
+    border: 'none',
+    borderRadius: '8px',
+    boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.3)',
+    transition: 'all 0.3s ease',
+    maxWidth: '300px',
+    right: 0,
+    left: 'auto',
+    overflow: 'hidden',
+    zIndex: 1040,
   },
   '& .dropdown-item': {
-    color: '#f5f5f5', // Light gray text color
+    color: '#f5f5f5',
     '&:hover': {
-      backgroundColor: '#AB1E24', // Red highlight on hover
-      color: '#ffffff', // White text on hover
+      backgroundColor: '#AB1E24',
+      color: '#ffffff',
     },
   },
 }));
 
-const Header = ({ username, onLogout = () => {} }) => {
-  const navigate = useNavigate();
-
-  const handleLogout = (event) => {
-    event.preventDefault(); // Prevent default behavior
-    console.log('onLogout:', onLogout); // Debugging: Check if onLogout is a function
+const Header = ({ username, onLogout }) => {
+  const handleLogout = () => {
     if (typeof onLogout === 'function') {
-      localStorage.removeItem('isAuthenticated');
-      onLogout(false);
-      navigate('/login');
+      onLogout();
     } else {
       console.error('onLogout is not a function');
     }
@@ -71,10 +63,7 @@ const Header = ({ username, onLogout = () => {} }) => {
   return (
     <CustomNavbar expand="lg" variant="dark">
       <Container fluid>
-        <Navbar.Brand href="/dashboard">
-          {/* Removed the logo and text */}
-        </Navbar.Brand>
-        <Navbar.Toggle aria-controls="navbar-nav" />
+        {/* Content */}
         <Navbar.Collapse id="navbar-nav" className="justify-content-end">
           <Nav>
             <CustomNavDropdown
@@ -98,6 +87,5 @@ const Header = ({ username, onLogout = () => {} }) => {
     </CustomNavbar>
   );
 };
-
 
 export default Header;
