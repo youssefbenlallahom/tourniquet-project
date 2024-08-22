@@ -1,24 +1,133 @@
 .gradient-custom-2 {
-    /* fallback for old browsers */
-    background: #fccb90;
-    
-    /* Chrome 10-25, Safari 5.1-6 */
-    background: -webkit-linear-gradient(to right, #ee7724, #d8363a, #dd3675, #b44593);
-    
-    /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-    background: linear-gradient(to right, #ee7724, #d8363a, #dd3675, #b44593);
-    }
-    
-    @media (min-width: 768px) {
-    .gradient-form {
-    height: 100vh !important;
-    }
-    }
-    @media (min-width: 769px) {
-    .gradient-custom-2 {
-    border-top-right-radius: .3rem;
-    border-bottom-right-radius: .3rem;
-    }
-    }
+    background: linear-gradient(to right, #ff4a2b, #8b0000, #4d0000, #000000);
+    /* Dégradé de fond utilisant les couleurs spécifiées */
+}
 
-    
+@media (min-width: 768px) {
+    .gradient-form {
+        height: 100vh !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* Centrage du formulaire verticalement et horizontalement */
+    }
+}
+
+@media (min-width: 769px) {
+    .gradient-custom-2 {
+        border-top-right-radius: 0.5rem;
+        border-bottom-right-radius: 0.5rem;
+        /* Rayon de bordure plus doux */
+    }
+}
+
+.error {
+    color: #8b0000;
+    margin-bottom: 1rem;
+    /* Couleur des erreurs correspondant au dégradé */
+}
+
+.text-center {
+    text-align: center;
+}
+
+/* From Uiverse.io by SujitAdroja */ 
+/* Bouton avec animation de dégradé */
+.btn {
+  color: purple;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: 2px solid purple;
+  padding: 10px 20px;
+  font-size: 17px;
+  font-weight: bold;
+  background: transparent;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s ease; /* Ajustement de la durée pour une transition plus fluide */
+  border-radius: 0.5rem; /* Rayon de bordure du bouton */
+}
+
+.btn:hover {
+  color: white;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  height: 100%;
+  width: 0%;
+  top: 0;
+  left: 0;
+  transform: skewX(45deg);
+  background: linear-gradient(to right, #ff4a2b, #8b0000, #4d0000, #000000); /* Dégradé pour le bouton */
+  z-index: -1;
+  transition: all 0.4s ease;
+}
+
+.btn:hover::before {
+  width: 100%;
+}
+
+/* Classe spécifique pour le bouton avec dégradé */
+.gradient-custom-2 {
+  background: linear-gradient(to right, #ff4a2b, #8b0000, #4d0000, #000000);
+  /* Dégradé de fond utilisant les couleurs spécifiées */
+}
+
+.gradient-custom-2:hover {
+  color: white; /* Changer la couleur du texte au survol si nécessaire */
+}
+
+@media (min-width: 768px) {
+  .gradient-form {
+    height: 100vh !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Centrage du formulaire verticalement et horizontalement */
+  }
+}
+
+@media (min-width: 769px) {
+  .gradient-custom-2 {
+    border-top-right-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+    /* Rayon de bordure plus doux */
+  }
+}
+
+.error {
+  color: #8b0000;
+  margin-bottom: 1rem;
+  /* Couleur des erreurs correspondant au dégradé */
+}
+
+.text-center {
+  text-align: center;
+}
+
+.MDBCardBody {
+  padding: 2rem;
+  background-color: #f7f7f7;
+  /* Fond clair pour la zone du formulaire */
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  /* Ombre subtile pour la profondeur */
+}
+
+.MDBInput {
+  margin-bottom: 1rem;
+  /* Espacement cohérent entre les entrées */
+}
+
+.MDBCol img {
+  width: 150px;
+  height: 150px;
+  /* Ajuster la taille du logo */
+}
+
+a.text-muted:hover {
+  color: #8b0000;
+  /* Couleur des liens au survol */
+}

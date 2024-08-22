@@ -1,21 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, MenuItem, Select, TextField, Typography, Modal, FormControl, InputLabel } from '@mui/material';
-import axiosInstance from '../../../axiosInstance'; // Adjust import path as needed
+import {
+  Box, Button, MenuItem, Select, TextField, Typography, Modal,
+  FormControl, InputLabel
+} from '@mui/material';
+import axiosInstance from '../../../axiosInstance'; // Assurez-vous que vous avez importé axiosInstance
 
-const Door = ({ open, onClose, onDoorsConfirmed }) => {
+const Door = ({ open, onClose, onDoorAdded }) => {
   const [devices, setDevices] = useState([]);
   const [selectedDevice, setSelectedDevice] = useState('');
   const [doorType, setDoorType] = useState('');
   const [port, setPort] = useState('');
   const [doorNumber, setDoorNumber] = useState('');
-  const [temporaryDoors, setTemporaryDoors] = useState([]);
+  const [temporaryDoors, setTemporaryDoors] = useState(() => {
+    // Charger les portes depuis le local storage au chargement du composant
+    const savedDoors = localStorage.getItem('temporaryDoors');
+    return savedDoors ? JSON.parse(savedDoors) : [];
+  });
 
   useEffect(() => {
-    // Fetch devices from the backend
     const fetchDevices = async () => {
       try {
         const response = await axiosInstance.get('/device/all/');
-        console.log('Devices fetched:', response.data);
         setDevices(response.data);
       } catch (error) {
         console.error('Error fetching devices:', error);
@@ -26,38 +31,40 @@ const Door = ({ open, onClose, onDoorsConfirmed }) => {
   }, []);
 
   const handleAddDoor = () => {
-    // Create a new door object
     const newDoor = {
-      device: selectedDevice,
+      id: Date.now(), // Utiliser Date.now() pour générer un ID unique temporairement
+      device: selectedDevice || '',
       type: doorType,
       port: parseInt(port, 10),
       doorNumber: parseInt(doorNumber, 10),
     };
 
-    // Add the new door to the temporary array
-    setTemporaryDoors([...temporaryDoors, newDoor]);
+    // Vérifier si la porte existe déjà dans la liste temporaire
+    const doorExists = temporaryDoors.some((door) =>
+      door.device === newDoor.device &&
+      door.type === newDoor.type &&
+      door.port === newDoor.port &&
+      door.doorNumber === newDoor.doorNumber
+    );
 
-    // Reset input fields
-    setSelectedDevice('');
-    setDoorType('');
-    setPort('');
-    setDoorNumber('');
-  };
+    if (!doorExists) {
+      // Ajouter la nouvelle porte à la liste temporaire
+      const updatedDoors = [...temporaryDoors, newDoor];
+      setTemporaryDoors(updatedDoors);
 
-  const handleConfirmDoors = async () => {
-    try {
-      // Send the doors to the backend
-      const response = await axiosInstance.post('/door/create/', { doors: temporaryDoors });
-      if (response.status === 201) {
-        console.log('Doors created successfully:', response.data);
-        onDoorsConfirmed(); // Notify the parent component to refresh or update state
-        setTemporaryDoors([]); // Clear the temporary list
-        onClose(); // Close the modal
-      } else {
-        console.error('Failed to create doors:', response.statusText);
-      }
-    } catch (error) {
-      console.error('Error:', error);
+      // Stocker la liste mise à jour dans le local storage
+      localStorage.setItem('temporaryDoors', JSON.stringify(updatedDoors));
+
+      // Réinitialiser les champs du formulaire
+      setSelectedDevice('');
+      setDoorType('');
+      setPort('');
+      setDoorNumber('');
+
+      // Notifier le parent que la porte a été ajoutée
+      onDoorAdded(newDoor);
+    } else {
+      alert('Door already exists.');
     }
   };
 
@@ -80,7 +87,7 @@ const Door = ({ open, onClose, onDoorsConfirmed }) => {
         <FormControl fullWidth sx={{ mb: 2 }}>
           <InputLabel>Device</InputLabel>
           <Select
-            value={selectedDevice}
+            value={selectedDevice || ''}
             onChange={(e) => setSelectedDevice(e.target.value)}
           >
             {devices.map(device => (
@@ -120,9 +127,16 @@ const Door = ({ open, onClose, onDoorsConfirmed }) => {
         <Button variant="contained" color="primary" onClick={handleAddDoor}>
           Add Door
         </Button>
-        <Button variant="contained" color="secondary" onClick={handleConfirmDoors} sx={{ mt: 2 }}>
-          Confirm Doors
-        </Button>
+
+        {/* Liste des portes ajoutées temporairement */}
+        <Typography variant="h6" gutterBottom>
+          Temporary Doors List
+        </Typography>
+        {temporaryDoors.map((door) => (
+          <Typography key={door.id}>
+            {`Device: ${door.device}, Type: ${door.type}, Port: ${door.port}, Door Number: ${door.doorNumber}`}
+          </Typography>
+        ))}
       </Box>
     </Modal>
   );
