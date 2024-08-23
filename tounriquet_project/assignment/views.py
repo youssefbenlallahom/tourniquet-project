@@ -27,6 +27,7 @@ def view_assignment(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_assignment(request):
+    print(request.data)
     if not request.user.is_staff and not request.user.is_superuser:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
     

@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Typography, Paper } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
-import AddDeviceModal from './AddDeviceModal';
+import { Box, Button, Typography, Paper, Card, CardContent, CardActions, IconButton, Tooltip, Modal, TextField, Divider } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import axiosInstance from '../../../axiosInstance'; // Adjust the path if needed
 import Layout from '../../../Layout';
+import AddDeviceModal from './AddDeviceModal'; // Assuming this is for adding new devices
+
 const Config = () => {
   const [devices, setDevices] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedDevice, setSelectedDevice] = useState(null);
+  const [editFormData, setEditFormData] = useState({ ip: '', port: '', doors: '' });
 
   useEffect(() => {
     // Fetch devices from backend when component mounts
@@ -14,10 +19,10 @@ const Config = () => {
       try {
         const response = await axiosInstance.get('/device/all/');
         setDevices(response.data.map(device => ({
-          id: device.DeviceId,           // 'DeviceId' is used as the unique identifier
-          ip: device.device_ip,          // 'device_ip' corresponds to 'ip' in the frontend
-          port: device.port,             // 'port' field
-          doors: device.nb_doors,        // 'nb_doors' corresponds to 'doors' in the frontend
+          id: device.DeviceId,
+          ip: device.device_ip,
+          port: device.port,
+          doors: device.nb_doors,
         })));
       } catch (error) {
         console.error('Error fetching devices:', error);
@@ -29,38 +34,140 @@ const Config = () => {
 
   const handleAddDevice = (device) => {
     setDevices([...devices, {
-      id: device.DeviceId, // Use the ID from the response
+      id: device.DeviceId,
       ip: device.device_ip,
       port: device.port,
       doors: device.nb_doors,
     }]);
   };
 
-  const columns = [
-    { field: 'id', headerName: 'ID', width: 90 },
-    { field: 'ip', headerName: 'IP Address', width: 150 },
-    { field: 'port', headerName: 'Port', width: 150 },
-    { field: 'doors', headerName: 'Number of Doors', width: 150 },
-  ];
+  const handleEditDevice = async () => {
+    try {
+      const response = await axiosInstance.put(`/device/update/${selectedDevice.id}/`, editFormData);
+      setDevices(devices.map(d => d.id === response.data.DeviceId ? response.data : d));
+      setIsEditModalOpen(false);
+    } catch (error) {
+      console.error('Error updating device:', error);
+    }
+  };
+
+  const handleDeleteDevice = async (id) => {
+    try {
+      await axiosInstance.delete(`/device/delete/${id}/`);
+      setDevices(devices.filter(device => device.id !== id));
+    } catch (error) {
+      console.error('Error deleting device:', error);
+    }
+  };
+
+  const handleEditChange = (e) => {
+    setEditFormData({
+      ...editFormData,
+      [e.target.name]: e.target.value,
+    });
+  };
 
   return (
     <Layout>
-    <Box p={4}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Typography variant="h4">Devices</Typography>
-        <Button variant="contained" color="primary" onClick={() => setIsModalOpen(true)}>
-          Add Device
-        </Button>
+      <Box p={4}>
+        <Typography variant="h4" gutterBottom sx={{ textAlign: 'left', color: 'black' }}>
+          Devices
+        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'left', mb: 4 }}>
+          <Button variant="contained" color="primary" onClick={() => setIsAddModalOpen(true)}>
+            Add Device
+          </Button>
+        </Box>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+          {devices.map(device => (
+            <Card key={device.id} sx={{ width: 300 }}>
+              <CardContent>
+                <Typography variant="h6">{`ID: ${device.id}`}</Typography>
+                <Typography variant="body1">{`IP Address: ${device.ip}`}</Typography>
+                <Typography variant="body1">{`Port: ${device.port}`}</Typography>
+                <Typography variant="body1">{`Number of Doors: ${device.doors}`}</Typography>
+              </CardContent>
+              <CardActions>
+                <Tooltip title="Edit">
+                  <IconButton color="primary" onClick={() => {
+                    setSelectedDevice(device);
+                    setEditFormData({
+                      ip: device.ip,
+                      port: device.port,
+                      doors: device.doors,
+                    });
+                    setIsEditModalOpen(true);
+                  }}>
+                    <EditIcon />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Delete">
+                  <IconButton color="error" onClick={() => handleDeleteDevice(device.id)}>
+                    <DeleteIcon />
+                  </IconButton>
+                </Tooltip>
+              </CardActions>
+            </Card>
+          ))}
+        </Box>
+
+        {/* Add Device Modal */}
+        <AddDeviceModal
+          open={isAddModalOpen}
+          onClose={() => setIsAddModalOpen(false)}
+          onAddDevice={handleAddDevice}
+        />
+
+        {/* Edit Device Modal */}
+        <Modal open={isEditModalOpen} onClose={() => setIsEditModalOpen(false)}>
+          <Box sx={{
+            width: 400,
+            padding: 3,
+            margin: 'auto',
+            marginTop: '10%',
+            backgroundColor: 'white',
+            borderRadius: 2,
+            boxShadow: 24,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2
+          }}>
+            <Typography variant="h6" gutterBottom>
+              Edit Device
+            </Typography>
+            <Divider />
+            <TextField
+              label="IP Address"
+              name="ip"
+              value={editFormData.ip}
+              onChange={handleEditChange}
+              fullWidth
+              margin="normal"
+            />
+            <TextField
+              label="Port"
+              name="port"
+              value={editFormData.port}
+              onChange={handleEditChange}
+              fullWidth
+              margin="normal"
+            />
+            <TextField
+              label="Number of Doors"
+              name="doors"
+              value={editFormData.doors}
+              onChange={handleEditChange}
+              fullWidth
+              margin="normal"
+            />
+            <Box display="flex" justifyContent="flex-end" mt={2}>
+              <Button variant="contained" color="primary" onClick={handleEditDevice}>
+                Save
+              </Button>
+            </Box>
+          </Box>
+        </Modal>
       </Box>
-      <Paper elevation={3} sx={{ height: 400, width: '100%' }}>
-        <DataGrid rows={devices} columns={columns} pageSize={5} rowsPerPageOptions={[5]} />
-      </Paper>
-      <AddDeviceModal
-        open={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onAddDevice={handleAddDevice}
-      />
-    </Box>
     </Layout>
   );
 };

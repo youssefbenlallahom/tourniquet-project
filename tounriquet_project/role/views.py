@@ -27,6 +27,7 @@ def view_role(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_role(request):
+    print(request.data)
     serializer = RoleSerializer(data=request.data)
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -38,7 +39,7 @@ def add_role(request):
     role_id = request.data.get('id')
     access_ids = request.data.get('access', [])
     timezone_ids = request.data.get('timezone', [])
-    name = request.data.get('name', '')
+    roleName = request.data.get('roleName', '')
     role_type = request.data.get('type', '')
 
     # Ensure access and timezone are lists
@@ -67,7 +68,7 @@ def add_role(request):
         except Role.DoesNotExist:
             return Response({'error': 'Role object not found.'}, status=status.HTTP_404_NOT_FOUND)
     else:
-        role, created = Role.objects.get_or_create(name=name, defaults={'type': role_type})
+        role, created = Role.objects.get_or_create(roleName=roleName, defaults={'type': role_type})
 
     # Set the many-to-many relationships
     access_objects = Access.objects.filter(id__in=access_ids)
