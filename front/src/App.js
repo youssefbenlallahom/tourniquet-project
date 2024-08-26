@@ -8,7 +8,7 @@ import '../src/components/login/Login.css';
 import '../src/components/dashboard/calendar.css';
 import AddRole from './components/dashboard/role/AddRole';
 import Role from './components/dashboard/role/Role';
-
+import Header from './components/dashboard/Header';
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(
     () => JSON.parse(localStorage.getItem('isAuthenticated')) || false

@@ -11,7 +11,8 @@ import Access from './access/Access';
 import AddAccess from './access/AddAccess'; // Import AddAccess
 import Role from './role/Role';
 import AddRole from './role/AddRole'; // Import AddRole
-import Assignment from './Assignment';
+import Assignment from './assignment/Assignment';
+import AddAssignment from './assignment/AddAssignment';
 import Bracelet from './bracelet/Bracelet';
 
 const Dashboard = ({ onLogout }) => {
@@ -32,6 +33,7 @@ const Dashboard = ({ onLogout }) => {
           <Route path="roles" element={<Role />} />
           <Route path="roles/new" element={<AddRole />} />
           <Route path="assignment" element={<Assignment />} />
+          <Route path="assignment/new" element={<AddAssignment />} /> {/* Add this route */}
           <Route path="bracelet" element={<Bracelet />} />
         </Routes>
       </Container>

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, MenuItem, Select, TextField, Typography, FormControl, InputLabel, Card, CardContent } from '@mui/material';
+import { Box, Button, MenuItem, Select, TextField, Typography, FormControl, InputLabel, Card, CardContent, Chip } from '@mui/material';
 import axiosInstance from '../../../axiosInstance'; 
 import Layout from '../../../Layout';
+import { useNavigate } from 'react-router-dom';
 
 const AddRole = () => {
   const [accesses, setAccesses] = useState([]);
@@ -10,6 +11,7 @@ const AddRole = () => {
   const [selectedAccess, setSelectedAccess] = useState([]);
   const [selectedTimezone, setSelectedTimezone] = useState([]);
   const [type, setType] = useState('');
+  const navigate = useNavigate(); // Initialize the navigate function
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,10 +41,13 @@ const AddRole = () => {
       const response = await axiosInstance.post('/role/create/', newRole);
       if (response.status === 201) {
         console.log('Role created successfully:', response.data);
+        // Clear form fields
         setRoleName('');
         setSelectedAccess([]);
         setSelectedTimezone([]);
         setType('');
+        // Redirect to /roles
+        navigate('/dashboard/roles');
       }
     } catch (error) {
       console.error('Error creating role:', error.response?.data || error.message);
@@ -52,16 +57,17 @@ const AddRole = () => {
   return (
     <Layout>
       <Box sx={{ padding: 3 }}>
-        <Typography variant="h4" gutterBottom>
+        <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', color: 'black' }}>
           Add New Role
         </Typography>
-        <Card>
+        <Card sx={{ maxWidth: 600, margin: '0 auto', boxShadow: 3 }}>
           <CardContent>
             <FormControl fullWidth margin="normal">
               <TextField
                 label="Role Name"
                 value={roleName}
                 onChange={(e) => setRoleName(e.target.value)}
+                variant="outlined"
               />
             </FormControl>
 
@@ -71,6 +77,13 @@ const AddRole = () => {
                 multiple
                 value={selectedAccess}
                 onChange={(e) => setSelectedAccess(e.target.value)}
+                renderValue={(selected) => (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    {selected.map((value) => (
+                      <Chip key={value} label={accesses.find(a => a.id === value)?.GameName} />
+                    ))}
+                  </Box>
+                )}
               >
                 {accesses.map((access) => (
                   <MenuItem key={access.id} value={access.id}>
@@ -83,13 +96,16 @@ const AddRole = () => {
             <FormControl fullWidth margin="normal">
               <InputLabel>Timezone</InputLabel>
               <Select
-                multiple
                 value={selectedTimezone}
-                onChange={(e) => setSelectedTimezone(e.target.value)}
+                onChange={(e) => setSelectedTimezone([e.target.value])}  // Always set as an array
+                renderValue={(value) => {
+                  const tz = timezones.find(t => t.TimezoneId === value[0]); // Access the first item in the array
+                  return tz ? `${new Date(tz.startTime).toLocaleString()} - ${new Date(tz.endTime).toLocaleString()}` : '';
+                }}
               >
                 {timezones.map((timezone) => (
-                  <MenuItem key={timezone.id} value={timezone.id}>
-                    {timezone.TimezoneId}
+                  <MenuItem key={timezone.TimezoneId} value={timezone.TimezoneId}>
+                    {new Date(timezone.startTime).toLocaleString()} - {new Date(timezone.endTime).toLocaleString()}
                   </MenuItem>
                 ))}
               </Select>
@@ -107,9 +123,11 @@ const AddRole = () => {
               </Select>
             </FormControl>
 
-            <Button variant="contained" color="primary" onClick={handleAddRole}>
-              Add Role
-            </Button>
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+              <Button variant="contained" color="primary" onClick={handleAddRole} sx={{ padding: '10px 20px' }}>
+                Add Role
+              </Button>
+            </Box>
           </CardContent>
         </Card>
       </Box>

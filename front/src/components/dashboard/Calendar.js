@@ -9,6 +9,7 @@ import axiosInstance from '../../axiosInstance';
 import TimeZoneView from './TimeZoneView';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import Layout from '../../Layout';
+import './calendar.css';
 
 const localizer = momentLocalizer(moment);
 
@@ -27,7 +28,7 @@ const Calendar = () => {
       try {
         const response = await axiosInstance.get('/access/all/');
         const accessMap = response.data.reduce((map, access) => {
-          map[access.id] = access.GameName; // Store GameName instead of name
+          map[access.id] = access.GameName;
           return map;
         }, {});
         setAccesses(response.data);
@@ -36,11 +37,9 @@ const Calendar = () => {
         console.error('Error fetching accesses:', error);
       }
     };
-  
+
     fetchAccesses();
   }, []);
-  
-  
 
   useEffect(() => {
     const fetchTimezones = async () => {
@@ -48,19 +47,16 @@ const Calendar = () => {
         const response = await axiosInstance.get('/timezone/all/');
         const fetchedEvents = response.data.map((timezone) => ({
           id: timezone.TimezoneId,
-          title: `Timezone for ${timezone.access.map(id => accessMap[id] || 'Unknown Access').join(', ')}`, // Use GameName
+          title: `Timezone for ${timezone.access.map(id => accessMap[id] || 'Unknown Access').join(', ')}`,
           start: new Date(timezone.startTime),
           end: new Date(timezone.endTime),
-          accessId: timezone.access // Handle multiple accesses
+          accessId: timezone.access
         }));
         setEvents(fetchedEvents);
       } catch (error) {
         console.error('Error fetching timezones:', error);
       }
     };
-    
-    
-    
 
     if (Object.keys(accessMap).length > 0) {
       fetchTimezones();
@@ -101,7 +97,7 @@ const Calendar = () => {
       setEvents([...events, newEvent]);
 
       const response = await axiosInstance.post('/timezone/create/', {
-        access: selectedAccess, // Send as array
+        access: selectedAccess,
         startTime: startDateTime.toISOString(),
         endTime: endDateTime.toISOString(),
       });
@@ -132,18 +128,18 @@ const Calendar = () => {
   return (
     <Layout>
       <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <Box display="flex" flexDirection="column" gap={2} p={3}>
-          <Typography variant="h6">Select The Access and Create Timezone</Typography>
-          <FormControl fullWidth sx={{ mb: 2 }}>
+        <Box display="flex" flexDirection="column" gap={1.5} p={2}>
+          <Typography variant="h6" sx={{ mb: 1 }}>Select The Access and Create Timezone</Typography>
+          <FormControl fullWidth sx={{ mb: 1 }}>
             <InputLabel>Access</InputLabel>
             <Select
               multiple
               value={selectedAccess}
               onChange={(e) => setSelectedAccess(e.target.value)}
               renderValue={(selected) => (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.3 }}>
                   {selected.map((value) => (
-                    <Typography key={value}>{accessMap[value]}</Typography>
+                    <Typography key={value} variant="body2">{accessMap[value]}</Typography>
                   ))}
                 </Box>
               )}
@@ -160,28 +156,30 @@ const Calendar = () => {
             variant="contained"
             color="secondary"
             onClick={() => setOpen(true)}
-            sx={{ mb: -3, maxWidth: '190px', fontSize: '16px' }}
+            sx={{ maxWidth: '200px', fontSize: '14px' }}
           >
             Create Timezone
           </Button>
 
-          <Box mt={4} sx={{ height: 500 }}>
+          <Box mt={2} sx={{ height: 400 }}>
             <BigCalendar
               localizer={localizer}
               events={events}
               startAccessor="start"
               endAccessor="end"
-              style={{ height: 500 }}
+              style={{ height: 400 }}
               selectable
               onSelectSlot={(slotInfo) => {
                 setSelectedDate(slotInfo.start);
+                setStartTime(slotInfo.start);
+                setEndTime(slotInfo.end);
                 setOpen(true);
               }}
               onSelectEvent={(event) => console.log(event)}
             />
           </Box>
 
-          <Box mt={4} sx={{ width: '100%' }}>
+          <Box mt={3} sx={{ width: '100%' }}>
             <TimeZoneView rows={events} accessMap={accessMap} onDelete={handleDelete} />
           </Box>
 
@@ -192,9 +190,9 @@ const Calendar = () => {
                 top: '50%',
                 left: '50%',
                 transform: 'translate(-50%, -50%)',
-                width: 400,
+                width: 350,
                 bgcolor: 'background.paper',
-                p: 4,
+                p: 3,
                 borderRadius: 2,
                 boxShadow: 3,
               }}
@@ -203,16 +201,16 @@ const Calendar = () => {
                 Create Timezone
               </Typography>
 
-              <FormControl fullWidth sx={{ mb: 2 }}>
+              <FormControl fullWidth sx={{ mb: 1 }}>
                 <InputLabel>Access</InputLabel>
                 <Select
                   multiple
                   value={selectedAccess}
                   onChange={(e) => setSelectedAccess(e.target.value)}
                   renderValue={(selected) => (
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.3 }}>
                       {selected.map((value) => (
-                        <Typography key={value}>{accessMap[value]}</Typography>
+                        <Typography key={value} variant="body2">{accessMap[value]}</Typography>
                       ))}
                     </Box>
                   )}
@@ -226,25 +224,27 @@ const Calendar = () => {
                 </Select>
               </FormControl>
               <DateTimePicker
-                renderInput={(props) => <TextField {...props} />}
+                renderInput={(props) => <TextField {...props} size="small" />}
                 label="Start Time"
                 value={startTime}
                 onChange={(newValue) => setStartTime(newValue)}
+                sx={{ mb: 1 }}
               />
               <DateTimePicker
-                renderInput={(props) => <TextField {...props} />}
+                renderInput={(props) => <TextField {...props} size="small" />}
                 label="End Time"
                 value={endTime}
                 onChange={(newValue) => setEndTime(newValue)}
               />
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleConfirm}
-                sx={{ mt: 2 }}
-              >
-                Confirm
-              </Button>
+
+              <Box mt={2} display="flex" justifyContent="space-between">
+                <Button variant="contained" color="primary" size="small" onClick={handleConfirm}>
+                  Confirm
+                </Button>
+                <Button variant="outlined" size="small" onClick={() => setOpen(false)}>
+                  Cancel
+                </Button>
+              </Box>
             </Box>
           </Modal>
         </Box>
