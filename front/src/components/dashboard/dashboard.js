@@ -33,7 +33,7 @@ const Dashboard = ({ onLogout }) => {
           <Route path="roles" element={<Role />} />
           <Route path="roles/new" element={<AddRole />} />
           <Route path="assignment" element={<Assignment />} />
-          <Route path="assignment/new" element={<AddAssignment />} /> {/* Add this route */}
+          <Route path="assignment/new" element={<AddAssignment />} /> {}
           <Route path="bracelet" element={<Bracelet />} />
         </Routes>
       </Container>

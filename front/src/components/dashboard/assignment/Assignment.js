@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Button, Typography, List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, Divider, Card, CardContent } from '@mui/material';
-import { Delete } from '@mui/icons-material';
+import { Delete, Edit } from '@mui/icons-material';
 import axiosInstance from '../../../axiosInstance';
 import Layout from '../../../Layout';
 import { useNavigate } from 'react-router-dom';
+import UpdateAssignmentModal from './UpdateAssignmentModal'; // Assurez-vous de créer ce composant
 
 const Assignment = () => {
   const [assignments, setAssignments] = useState([]);
+  const [selectedAssignment, setSelectedAssignment] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,7 +29,6 @@ const Assignment = () => {
     try {
       const response = await axiosInstance.delete(`/assignment/delete/${assignmentId}/`);
       if (response.status === 204) {
-        console.log('Assignment removed successfully');
         setAssignments(assignments.filter(assignment => assignment.id !== assignmentId));
       } else {
         console.error('Failed to remove assignment:', response.statusText);
@@ -34,6 +36,11 @@ const Assignment = () => {
     } catch (error) {
       console.error('Error:', error);
     }
+  };
+
+  const handleEditClick = (assignment) => {
+    setSelectedAssignment(assignment);
+    setModalOpen(true);
   };
 
   return (
@@ -59,6 +66,9 @@ const Assignment = () => {
                       secondary={`Role: ${assignment.role}`}
                     />
                     <ListItemSecondaryAction>
+                      <IconButton edge="end" aria-label="edit" onClick={() => handleEditClick(assignment)}>
+                        <Edit />
+                      </IconButton>
                       <IconButton edge="end" aria-label="delete" onClick={() => handleRemoveAssignment(assignment.id)}>
                         <Delete />
                       </IconButton>
@@ -71,6 +81,17 @@ const Assignment = () => {
           </List>
         </Box>
       </Box>
+      <UpdateAssignmentModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        assignment={selectedAssignment}
+        onUpdate={(updatedAssignment) => {
+          setAssignments(assignments.map(assignment => 
+            assignment.id === updatedAssignment.id ? updatedAssignment : assignment
+          ));
+          setModalOpen(false);
+        }}
+      />
     </Layout>
   );
 };

@@ -18,10 +18,12 @@ const Calendar = () => {
   const [accessMap, setAccessMap] = useState({});
   const [events, setEvents] = useState([]);
   const [open, setOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [startTime, setStartTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
   const [selectedAccess, setSelectedAccess] = useState([]);
+  const [editingEvent, setEditingEvent] = useState(null);
 
   useEffect(() => {
     const fetchAccesses = async () => {
@@ -116,6 +118,54 @@ const Calendar = () => {
     setEndTime(null);
   };
 
+  const handleEdit = async () => {
+    if (!selectedDate || !startTime || !endTime || selectedAccess.length === 0) {
+      alert('Please fill out all required fields.');
+      return;
+    }
+
+    const startDateTime = new Date(selectedDate);
+    startDateTime.setHours(startTime.getHours(), startTime.getMinutes());
+
+    const endDateTime = new Date(selectedDate);
+    endDateTime.setHours(endTime.getHours(), endTime.getMinutes());
+
+    if (!isValid(startDateTime) || !isValid(endDateTime)) {
+      alert('Invalid date-time values. Please check your input.');
+      return;
+    }
+
+    if (isBefore(endDateTime, startDateTime)) {
+      alert('End time must be after start time.');
+      return;
+    }
+
+    try {
+      const response = await axiosInstance.put(`/timezone/update/${editingEvent.id}/`, {
+        access: selectedAccess,
+        startTime: startDateTime.toISOString(),
+        endTime: endDateTime.toISOString(),
+      });
+
+      if (response.status === 200) {
+        setEvents(events.map(event => 
+          event.id === editingEvent.id
+            ? { ...event, start: startDateTime, end: endDateTime, accessId: selectedAccess }
+            : event
+        ));
+        setEditOpen(false);
+      } else {
+        alert('Failed to update timezone');
+      }
+    } catch (error) {
+      console.error('Error updating timezone:', error);
+    }
+
+    setSelectedDate(null);
+    setStartTime(null);
+    setEndTime(null);
+  };
+
   const handleDelete = async (id) => {
     try {
       await axiosInstance.delete(`/timezone/delete/${id}/`);
@@ -175,14 +225,29 @@ const Calendar = () => {
                 setEndTime(slotInfo.end);
                 setOpen(true);
               }}
-              onSelectEvent={(event) => console.log(event)}
+              onSelectEvent={(event) => {
+                setEditingEvent(event);
+                setSelectedDate(event.start);
+                setStartTime(event.start);
+                setEndTime(event.end);
+                setSelectedAccess(event.accessId);
+                setEditOpen(true);
+              }}
             />
           </Box>
 
           <Box mt={3} sx={{ width: '100%' }}>
-            <TimeZoneView rows={events} accessMap={accessMap} onDelete={handleDelete} />
+            <TimeZoneView rows={events} accessMap={accessMap} onDelete={handleDelete} onEdit={(event) => {
+              setEditingEvent(event);
+              setSelectedDate(event.start);
+              setStartTime(event.start);
+              setEndTime(event.end);
+              setSelectedAccess(event.accessId);
+              setEditOpen(true);
+            }} />
           </Box>
 
+          {/* Create Timezone Modal */}
           <Modal open={open} onClose={() => setOpen(false)}>
             <Box
               sx={{
@@ -223,25 +288,91 @@ const Calendar = () => {
                   ))}
                 </Select>
               </FormControl>
+
               <DateTimePicker
-                renderInput={(props) => <TextField {...props} size="small" />}
                 label="Start Time"
                 value={startTime}
-                onChange={(newValue) => setStartTime(newValue)}
-                sx={{ mb: 1 }}
+                onChange={setStartTime}
+                renderInput={(params) => <TextField {...params} fullWidth />}
               />
               <DateTimePicker
-                renderInput={(props) => <TextField {...props} size="small" />}
                 label="End Time"
                 value={endTime}
-                onChange={(newValue) => setEndTime(newValue)}
+                onChange={setEndTime}
+                renderInput={(params) => <TextField {...params} fullWidth />}
               />
 
-              <Box mt={2} display="flex" justifyContent="space-between">
-                <Button variant="contained" color="primary" size="small" onClick={handleConfirm}>
+              <Box mt={2}>
+                <Button variant="contained" color="primary" onClick={handleConfirm}>
                   Confirm
                 </Button>
-                <Button variant="outlined" size="small" onClick={() => setOpen(false)}>
+                <Button variant="outlined" color="secondary" onClick={() => setOpen(false)} sx={{ ml: 1 }}>
+                  Cancel
+                </Button>
+              </Box>
+            </Box>
+          </Modal>
+
+          {/* Edit Timezone Modal */}
+          <Modal open={editOpen} onClose={() => setEditOpen(false)}>
+            <Box
+              sx={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: 350,
+                bgcolor: 'background.paper',
+                p: 3,
+                borderRadius: 2,
+                boxShadow: 3,
+              }}
+            >
+              <Typography variant="h6" gutterBottom>
+                Edit Timezone
+              </Typography>
+
+              <FormControl fullWidth sx={{ mb: 1 }}>
+                <InputLabel>Access</InputLabel>
+                <Select
+                  multiple
+                  value={selectedAccess}
+                  onChange={(e) => setSelectedAccess(e.target.value)}
+                  renderValue={(selected) => (
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.3 }}>
+                      {selected.map((value) => (
+                        <Typography key={value} variant="body2">{accessMap[value]}</Typography>
+                      ))}
+                    </Box>
+                  )}
+                  label="Access"
+                >
+                  {accesses.map(access => (
+                    <MenuItem key={access.id} value={access.id}>
+                      {access.GameName}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <DateTimePicker
+                label="Start Time"
+                value={startTime}
+                onChange={setStartTime}
+                renderInput={(params) => <TextField {...params} fullWidth />}
+              />
+              <DateTimePicker
+                label="End Time"
+                value={endTime}
+                onChange={setEndTime}
+                renderInput={(params) => <TextField {...params} fullWidth />}
+              />
+
+              <Box mt={2}>
+                <Button variant="contained" color="primary" onClick={handleEdit}>
+                  Save
+                </Button>
+                <Button variant="outlined" color="secondary" onClick={() => setEditOpen(false)} sx={{ ml: 1 }}>
                   Cancel
                 </Button>
               </Box>
