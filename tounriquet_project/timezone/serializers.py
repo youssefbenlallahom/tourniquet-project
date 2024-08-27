@@ -2,8 +2,15 @@ from rest_framework import serializers
 from .models import Timezone,Access
 from access.serializers import AccessSerializer
 class TimezoneSerializer(serializers.ModelSerializer):
-    access = serializers.PrimaryKeyRelatedField(queryset=Access.objects.all(), many=True)
+    access = AccessSerializer(many=True)
 
     class Meta:
         model = Timezone
-        fields = ['TimezoneId', 'access', 'startTime', 'endTime']
+        fields = '__all__'
+        
+class UpdateTimezoneSerializer(serializers.ModelSerializer):
+    access = serializers.PrimaryKeyRelatedField(many=True, queryset=Access.objects.all())
+
+    class Meta:
+        model = Timezone
+        fields = '__all__'

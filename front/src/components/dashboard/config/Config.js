@@ -11,7 +11,7 @@ const Config = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState(null);
-  const [editFormData, setEditFormData] = useState({ ip: '', port: '', doors: '' });
+  const [editFormData, setEditFormData] = useState({ device_ip: '', port: '', nb_doors: '' });
 
   useEffect(() => {
     // Fetch devices from backend when component mounts
@@ -20,9 +20,9 @@ const Config = () => {
         const response = await axiosInstance.get('/device/all/');
         setDevices(response.data.map(device => ({
           id: device.DeviceId,
-          ip: device.device_ip,
+          device_ip: device.device_ip,
           port: device.port,
-          doors: device.nb_doors,
+          nb_doors: device.nb_doors,
         })));
       } catch (error) {
         console.error('Error fetching devices:', error);
@@ -35,9 +35,9 @@ const Config = () => {
   const handleAddDevice = (device) => {
     setDevices([...devices, {
       id: device.DeviceId,
-      ip: device.device_ip,
+      device_ip: device.device_ip,
       port: device.port,
-      doors: device.nb_doors,
+      nb_doors: device.nb_doors,
     }]);
   };
 
@@ -83,18 +83,18 @@ const Config = () => {
             <Card key={device.id} sx={{ width: 300 }}>
               <CardContent>
                 <Typography variant="h6">{`ID: ${device.id}`}</Typography>
-                <Typography variant="body1">{`IP Address: ${device.ip}`}</Typography>
+                <Typography variant="body1">{`IP Address: ${device.device_ip}`}</Typography>
                 <Typography variant="body1">{`Port: ${device.port}`}</Typography>
-                <Typography variant="body1">{`Number of Doors: ${device.doors}`}</Typography>
+                <Typography variant="body1">{`Number of Doors: ${device.nb_doors}`}</Typography>
               </CardContent>
               <CardActions>
                 <Tooltip title="Edit">
                   <IconButton color="primary" onClick={() => {
                     setSelectedDevice(device);
                     setEditFormData({
-                      ip: device.ip,
+                      device_ip: device.device_ip,
                       port: device.port,
-                      doors: device.doors,
+                      nb_doors: device.nb_doors,
                     });
                     setIsEditModalOpen(true);
                   }}>
@@ -138,8 +138,8 @@ const Config = () => {
             <Divider />
             <TextField
               label="IP Address"
-              name="ip"
-              value={editFormData.ip}
+              name="device_ip"
+              value={editFormData.device_ip}
               onChange={handleEditChange}
               fullWidth
               margin="normal"
@@ -154,8 +154,8 @@ const Config = () => {
             />
             <TextField
               label="Number of Doors"
-              name="doors"
-              value={editFormData.doors}
+              name="nb_doors"
+              value={editFormData.nb_doors}
               onChange={handleEditChange}
               fullWidth
               margin="normal"

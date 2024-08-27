@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
 from .models import Assignment ,Assignment_Access,Access,Timezone
-from .serializers import AssignmentSerializer ,Assignment_AccessSerializer
+from .serializers import AssignmentSerializer ,Assignment_AccessSerializer,UpdateAssignmentSerializer
 from rest_framework import serializers
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -91,16 +91,16 @@ def delete_assignment(request, AssignmentId):
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
-def update_assignment(request, AssignmentId):
+def update_assignment(request, id):
     if not request.user.is_staff and not request.user.is_superuser:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
     try:
-        assignment = Assignment.objects.get(id=AssignmentId)
+        assignment_instance = Assignment.objects.get(id=id)
     except Assignment.DoesNotExist:
         return Response({'error': 'Assignment not found.'}, status=status.HTTP_404_NOT_FOUND)
 
     data = request.data
-    serializer = AssignmentSerializer(assignment, data=data, partial=True)
+    serializer = UpdateAssignmentSerializer(assignment_instance, data=data, partial=True)
     if serializer.is_valid():
         updated_assignment = serializer.save()
         # Update related access and timezones if provided

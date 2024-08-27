@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
 from .models import Timezone ,Access
-from .serializers import TimezoneSerializer
+from .serializers import TimezoneSerializer,UpdateTimezoneSerializer
 from rest_framework import serializers
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -70,11 +70,11 @@ def update_timezones(request, TimezoneId):
     if not request.user.is_staff and not request.user.is_superuser:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
     try:
-        Timezone = Timezone.objects.get(TimezoneId=TimezoneId,user=request.user)
+        timzone_instance = Timezone.objects.get(TimezoneId=TimezoneId,user=request.user)
     except Timezone.DoesNotExist:
         return Response({'error': 'Timezone not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-    serializer = TimezoneSerializer(Timezone, data=request.data)
+    serializer = UpdateTimezoneSerializer(timzone_instance, data=request.data)
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data)

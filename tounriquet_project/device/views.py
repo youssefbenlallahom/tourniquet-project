@@ -55,17 +55,18 @@ def delete_device(request, DeviceId):
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_device(request, DeviceId):
+    print(request.data)
     if not request.user.is_staff and not request.user.is_superuser:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
     try:
-        Device = Device.objects.get(DeviceId=DeviceId,user=request.user)
+        device_instance = Device.objects.get(DeviceId=DeviceId)
     except Device.DoesNotExist:
         return Response({'error': 'Device not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-    serializer = DeviceSerializer(Device, data=request.data)
+    serializer = DeviceSerializer(device_instance, data=request.data)
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data)
     
+    print(serializer.errors)  # Add this line to see what went wrong
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-

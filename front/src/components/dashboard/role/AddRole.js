@@ -99,8 +99,8 @@ const AddRole = () => {
                 value={selectedTimezone}
                 onChange={(e) => setSelectedTimezone([e.target.value])}  // Always set as an array
                 renderValue={(value) => {
-                  const tz = timezones.find(t => t.TimezoneId === value[0]); // Access the first item in the array
-                  return tz ? `${new Date(tz.startTime).toLocaleString()} - ${new Date(tz.endTime).toLocaleString()}` : '';
+                  const tz = timezones.find(t => t.TimezoneId === value[0]); 
+                  return tz ? `${new Date(tz?.startTime).toLocaleString()} - ${new Date(tz?.endTime).toLocaleString()}` : 'No timezone selected';
                 }}
               >
                 {timezones.map((timezone) => (

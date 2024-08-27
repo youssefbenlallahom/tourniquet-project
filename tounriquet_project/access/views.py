@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
 from .models import Access,Door
-from .serializers import AccessSerializer
+from .serializers import AccessSerializer,UpdateAccessSerializer
 from rest_framework import serializers
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -79,15 +79,15 @@ def delete_access(request, id):
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
-def update_access(request, AccessId):
+def update_access(request, id):
     if not request.user.is_staff and not request.user.is_superuser:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
     try:
-        Access = Access.objects.get(AccessId=AccessId,user=request.user)
+        access_instance = Access.objects.get(id=id)
     except Access.DoesNotExist:
         return Response({'error': 'Access not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-    serializer = AccessSerializer(Access, data=request.data)
+    serializer = UpdateAccessSerializer(access_instance, data=request.data)
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data)
