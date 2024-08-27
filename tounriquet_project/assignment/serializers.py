@@ -1,14 +1,16 @@
 from rest_framework import serializers
 from .models import Assignment ,Access,Role,Timezone,Assignment_Access
 from role.serializers import RoleSerializer
+from access.serializers import AccessSerializer
+from timezone.serializers import TimezoneSerializer
 
 class AssignmentSerializer(serializers.ModelSerializer):
-    role = serializers.PrimaryKeyRelatedField(queryset=Role.objects.all())  # Ensure this handles Role IDs
-
+    role = RoleSerializer()
+    access_ids = AccessSerializer(many=True)  # Utilisez `many=True` pour `ManyToMany`
+    timezone_ids = TimezoneSerializer(many=True)  # Utilisez `many=True` pour `ManyToMany`
     class Meta:
         model = Assignment
         fields = '__all__'
-        
 class Assignment_AccessSerializer(serializers.ModelSerializer):
     assignment_id = serializers.PrimaryKeyRelatedField(queryset=Assignment.objects.all(), required=True, allow_null=False)
     access_id = serializers.PrimaryKeyRelatedField(queryset=Access.objects.all(), required=True, allow_null=False)

@@ -8,7 +8,8 @@ import '../src/components/login/Login.css';
 import '../src/components/dashboard/calendar.css';
 import AddRole from './components/dashboard/role/AddRole';
 import Role from './components/dashboard/role/Role';
-import Header from './components/dashboard/Header';
+import Assignment from './components/dashboard/assignment/Assignment';
+import AddAssignment from './components/dashboard/assignment/AddAssignment';
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(
     () => JSON.parse(localStorage.getItem('isAuthenticated')) || false
@@ -43,6 +44,9 @@ const App = () => {
           <Route path="access/new" element={<AddAccess />} />
           <Route path="roles" element={<Role />} />
           <Route path="roles/new" element={<AddRole />} />
+          <Route path="assignment" element={<Assignment />} />
+          <Route path="assignment/new" element={<AddAssignment />} />
+          
           {/* Other dashboard routes */}
         </Route>
         <Route path="/" element={<Navigate to="/login" />} />

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box, Button, TextField, Typography, Paper, Grid, Fab, Tooltip, Modal,
-  FormControl, InputLabel, Select, MenuItem, Table, TableBody, TableCell, TableHead, TableRow, Checkbox,
+  FormControl, InputLabel, Select, MenuItem, Table, TableBody, TableCell, TableHead, TableRow,
   CircularProgress, IconButton
 } from '@mui/material';
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
@@ -11,7 +11,6 @@ import Layout from '../../../Layout';
 
 const AddAccess = () => {
   const [gameName, setGameName] = useState('');
-  const [selectedDoorIds, setSelectedDoorIds] = useState([]);
   const [doors, setDoors] = useState([]);
   const [devices, setDevices] = useState([]);
   const [openModal, setOpenModal] = useState(false);
@@ -25,10 +24,7 @@ const AddAccess = () => {
     const loadDoorsFromLocalStorage = () => {
       const storedDoors = localStorage.getItem('doors');
       if (storedDoors) {
-        const doorsFromStorage = JSON.parse(storedDoors);
-        setDoors(doorsFromStorage);
-        const selectedIds = doorsFromStorage.filter(door => door.select).map(door => door.id);
-        setSelectedDoorIds(selectedIds);
+        setDoors(JSON.parse(storedDoors));
       }
     };
 
@@ -51,31 +47,15 @@ const AddAccess = () => {
   }, []);
 
   const updateLocalStorage = (updatedDoors) => {
-    const filteredDoors = updatedDoors.map(({ id, ...rest }) => rest); // Remove `id` from each door
-    localStorage.setItem('doors', JSON.stringify(filteredDoors));
-  };
-
-  const handleCheckboxChange = (doorId) => {
-    setDoors((prevDoors) => {
-      const updatedDoors = prevDoors.map((door) =>
-        door.id === doorId ? { ...door, select: !door.select } : door
-      );
-      const newSelectedIds = updatedDoors.filter(door => door.select).map(door => door.id);
-      setSelectedDoorIds(newSelectedIds);
-      updateLocalStorage(updatedDoors); // Update localStorage
-      return updatedDoors;
-    });
+    localStorage.setItem('doors', JSON.stringify(updatedDoors));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); // Start loading animation
+    setLoading(true);
 
-    // Step 1: Extract selected doors and send to /doors/create/
-    const doorsToCreate = doors.filter(door => door.select);
     try {
-      // Sending each door for creation
-      const createDoorRequests = doorsToCreate.map(door =>
+      const createDoorRequests = doors.map(door =>
         axiosInstance.post('/door/create/', {
           device: door.device,
           type: door.type,
@@ -84,39 +64,33 @@ const AddAccess = () => {
       );
       const responses = await Promise.all(createDoorRequests);
 
-      // Extract IDs from responses
       const createdDoorIds = responses.map(response => response.data.id);
 
-      // Optional: Wait for a short period before proceeding (e.g., 1 second)
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Step 2: Create access with the IDs of the newly created doors
       await axiosInstance.post('/access/create/', {
         GameName: gameName,
         doors: createdDoorIds
       });
 
-      // Clear localStorage
       localStorage.removeItem('doors');
 
-      // Navigate to another page after success
       navigate('/dashboard/access');
     } catch (error) {
       console.error('Error creating doors or access:', error);
     } finally {
-      setLoading(false); // Stop loading animation
+      setLoading(false);
     }
   };
 
   const handleAddDoor = () => {
     const newDoorWithId = {
       ...newDoor,
-      id: Date.now(), // Use timestamp as a unique ID for demo purposes
-      select: false,
+      id: Date.now(),
     };
     setDoors((prevDoors) => {
       const updatedDoors = [...prevDoors, newDoorWithId];
-      updateLocalStorage(updatedDoors); // Update localStorage
+      updateLocalStorage(updatedDoors);
       return updatedDoors;
     });
     setOpenModal(false);
@@ -127,9 +101,9 @@ const AddAccess = () => {
     setDoors((prevDoors) =>
       prevDoors.map((door) => {
         if (door.id === editDoor.id) {
-          const updatedDoor = { ...editDoor, select: door.select }; // Keep the existing `select` state
+          const updatedDoor = { ...editDoor };
           const updatedDoors = prevDoors.map((d) => (d.id === editDoor.id ? updatedDoor : d));
-          updateLocalStorage(updatedDoors); // Update localStorage
+          updateLocalStorage(updatedDoors);
           return updatedDoor;
         }
         return door;
@@ -141,8 +115,7 @@ const AddAccess = () => {
   const handleDeleteDoor = (doorId) => {
     setDoors((prevDoors) => {
       const updatedDoors = prevDoors.filter((door) => door.id !== doorId);
-      updateLocalStorage(updatedDoors); // Update localStorage
-      setSelectedDoorIds((prevSelectedDoorIds) => prevSelectedDoorIds.filter(id => id !== doorId));
+      updateLocalStorage(updatedDoors);
       return updatedDoors;
     });
   };
@@ -173,28 +146,18 @@ const AddAccess = () => {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>ID</TableCell>
                     <TableCell>Device</TableCell>
                     <TableCell>Type</TableCell>
                     <TableCell>Door Number</TableCell>
-                    <TableCell>Select</TableCell>
                     <TableCell>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {doors.map((door) => (
                     <TableRow key={door.id}>
-                      <TableCell>{door.id}</TableCell>
                       <TableCell>{door.device}</TableCell>
                       <TableCell>{door.type}</TableCell>
                       <TableCell>{door.doorNumber}</TableCell>
-                      <TableCell>
-                        <Checkbox
-                          checked={door.select}
-                          onChange={() => handleCheckboxChange(door.id)}
-                          color="primary"
-                        />
-                      </TableCell>
                       <TableCell>
                         <IconButton onClick={() => setEditDoor(door)}>
                           <EditIcon color="primary" />
@@ -240,7 +203,6 @@ const AddAccess = () => {
           </form>
         )}
 
-        {/* Add Door Modal */}
         <Modal open={openModal} onClose={() => setOpenModal(false)}>
           <Box
             sx={{
@@ -292,15 +254,13 @@ const AddAccess = () => {
             />
             <Grid container spacing={2} justifyContent="flex-end" sx={{ mt: 2 }}>
               <Grid item>
-                <Button onClick={() => setOpenModal(false)}>Cancel</Button>
+                <Button onClick={() => setOpenModal(false)} variant="outlined">
+                  Cancel
+                </Button>
               </Grid>
               <Grid item>
-                <Button
-                  onClick={editDoor ? handleEditDoor : handleAddDoor}
-                  variant="contained"
-                  color="primary"
-                >
-                  {editDoor ? 'Update' : 'Add'}
+                <Button onClick={editDoor ? handleEditDoor : handleAddDoor} variant="contained" color="primary">
+                  {editDoor ? 'Save Changes' : 'Add Door'}
                 </Button>
               </Grid>
             </Grid>
