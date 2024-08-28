@@ -16,15 +16,17 @@ const Role = () => {
   const [accesses, setAccesses] = useState([]);
   const [timezones, setTimezones] = useState([]);
 
+  // Define fetchRoles here
+  const fetchRoles = async () => {
+    try {
+      const response = await axiosInstance.get('/role/all/');
+      setRoles(response.data);
+    } catch (error) {
+      console.error('Error fetching roles:', error);
+    }
+  };
+
   useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        const response = await axiosInstance.get('/role/all/');
-        setRoles(response.data);
-      } catch (error) {
-        console.error('Error fetching roles:', error);
-      }
-    };
     fetchRoles();
   }, []);
 
@@ -44,14 +46,18 @@ const Role = () => {
   const handleDelete = async (roleId) => {
     try {
       await axiosInstance.delete(`/role/delete/${roleId}/`);
-      setRoles(roles.filter((role) => role.id !== roleId));
+      await fetchRoles(); // Reload roles after deletion
     } catch (error) {
       console.error('Error deleting role:', error);
     }
   };
 
   const handleEdit = (role) => {
-    setEditRole(role);
+    setEditRole({
+      ...role,
+      access: role.access.map((access) => access.id), // Ensure this returns an array of IDs
+      timezone: role.timezone.map((tz) => tz.TimezoneId), // Ensure this returns an array containing the timezone ID
+    });
     fetchAccessesAndTimezones(); // Fetch accesses and timezones when editing a role
     setOpen(true);
   };
@@ -63,13 +69,22 @@ const Role = () => {
 
   const handleUpdateRole = async () => {
     try {
-      const response = await axiosInstance.put(`/role/update/${editRole.id}/`, editRole);
+      const updatedRole = {
+        ...editRole,
+        access: editRole.access.map((access) => access.id || access),
+        timezone: editRole.timezone.map((timezone) => timezone.TimezoneId || timezone),
+      };
+
+      console.log('Sending updated role:', updatedRole);
+
+      const response = await axiosInstance.put(`/role/update/${editRole.id}/`, updatedRole);
+
       if (response.status === 200) {
-        setRoles(roles.map((role) => (role.id === editRole.id ? response.data : role)));
+        await fetchRoles(); // Reload roles after update
         handleClose();
       }
     } catch (error) {
-      console.error('Error updating role:', error);
+      console.error('Error updating role:', error.response.data || error.message);
     }
   };
 
@@ -183,7 +198,7 @@ const Role = () => {
                     onChange={(e) =>
                       setEditRole({
                         ...editRole,
-                        access: e.target.value,
+                        access: e.target.value, // Ensure this returns an array of IDs
                       })
                     }
                     renderValue={(selected) => (
@@ -212,7 +227,7 @@ const Role = () => {
                     onChange={(e) =>
                       setEditRole({
                         ...editRole,
-                        timezone: [e.target.value],
+                        timezone: [e.target.value], // Ensure this returns an array containing the timezone ID
                       })
                     }
                     renderValue={(value) => {
@@ -242,20 +257,19 @@ const Role = () => {
                     onChange={handleChange}
                   >
                     <MenuItem value="E">E</MenuItem>
+                    <MenuItem value="T">T</MenuItem>
                     <MenuItem value="S">S</MenuItem>
-                    <MenuItem value="E/S">E/S</MenuItem>
                   </Select>
                 </FormControl>
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
                   <Button
                     variant="contained"
                     color="primary"
                     onClick={handleUpdateRole}
-                    sx={{ marginRight: 2 }}
                   >
                     Save
                   </Button>
-                  <Button variant="outlined" onClick={handleClose}>
+                  <Button variant="outlined" color="secondary" onClick={handleClose}>
                     Cancel
                   </Button>
                 </Box>

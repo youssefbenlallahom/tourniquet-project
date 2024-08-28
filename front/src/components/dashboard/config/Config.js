@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Typography, Paper, Card, CardContent, CardActions, IconButton, Tooltip, Modal, TextField, Divider } from '@mui/material';
+import { Box, Button, Typography, Card, CardContent, CardActions, IconButton, Tooltip, Modal, TextField, Divider } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import axiosInstance from '../../../axiosInstance'; // Adjust the path if needed
@@ -42,23 +42,49 @@ const Config = () => {
   };
 
   const handleEditDevice = async () => {
+    if (!editFormData.ip || !editFormData.port || !editFormData.doors) {
+      console.error('Validation failed: All fields are required.');
+      return;
+    }
+  
     try {
-      const response = await axiosInstance.put(`/device/update/${selectedDevice.id}/`, editFormData);
-      setDevices(devices.map(d => d.id === response.data.DeviceId ? response.data : d));
+      // Préparez les données à envoyer
+      const formattedData = {
+        device_ip: editFormData.ip,
+        port: editFormData.port,
+        nb_doors: editFormData.doors
+      };
+      
+      // Effectuez la requête PUT pour mettre à jour l'appareil
+      const response = await axiosInstance.put(`/device/update/${selectedDevice.id}/`, formattedData);
+      
+      // Mettez à jour la liste des appareils avec les nouvelles données
+      setDevices(devices.map(d => d.id === response.data.DeviceId ? {
+        ...d,
+        ip: response.data.device_ip,
+        port: response.data.port,
+        doors: response.data.nb_doors
+      } : d));
+  
+      // Fermez la modal
       setIsEditModalOpen(false);
     } catch (error) {
-      console.error('Error updating device:', error);
+      console.error('Error updating device:', error.response?.data || error.message);
     }
   };
+  
+  
+  
 
   const handleDeleteDevice = async (id) => {
     try {
-      await axiosInstance.delete(`/device/delete/${id}/`);
+      const response = await axiosInstance.delete(`/device/delete/${id}/`);
       setDevices(devices.filter(device => device.id !== id));
     } catch (error) {
-      console.error('Error deleting device:', error);
+      console.error('Error deleting device:', error.response?.data || error.message);
     }
   };
+  
 
   const handleEditChange = (e) => {
     setEditFormData({
