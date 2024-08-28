@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box, Button, IconButton, Table, TableBody, TableCell, TableHead, TableRow, Collapse, Paper,
-  TableContainer, Tooltip, Typography
+  TableContainer, Tooltip, Typography, Modal
 } from '@mui/material';
 import { Add as AddIcon, Delete, Edit, ExpandMore, ExpandLess } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../../axiosInstance';
 import Layout from '../../../Layout';
+import UpdateAccessModal from './UpdateAccessModal'; // Assure-toi que ce chemin est correct
+
 const Access = () => {
   const [accesses, setAccesses] = useState([]);
   const [doorsMap, setDoorsMap] = useState({});
   const [openRows, setOpenRows] = useState({});
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedAccess, setSelectedAccess] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -53,110 +57,129 @@ const Access = () => {
     }
   };
 
-  const handleUpdate = (id) => {
-    navigate(`/access/update/${id}`);
+  const handleUpdate = (access) => {
+    setSelectedAccess(access);
+    setModalOpen(true);
   };
 
   const handleRowClick = (id) => {
     setOpenRows(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
+  const handleModalClose = () => {
+    setModalOpen(false);
+    setSelectedAccess(null);
+  };
+
   return (
     <Layout>
-    <Box p={2}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Typography variant="h4">Access Configuration</Typography>
-        <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={() => navigate('/dashboard/access/new')}>
-          Add Access
-        </Button>
-      </Box>
+      <Box p={2}>
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+          <Typography variant="h4">Access Configuration</Typography>
+          <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={() => navigate('/dashboard/access/new')}>
+            Add Access
+          </Button>
+        </Box>
 
-      {accesses.length === 0 ? (
-        <Typography variant="h6" align="center" color="textSecondary">
-          No access records found.
-        </Typography>
-      ) : (
-        <TableContainer component={Paper}>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell align="left">Game Name</TableCell>
-                <TableCell align="left">Doors</TableCell>
-                <TableCell align="center">Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {accesses.map((access) => (
-                <React.Fragment key={access.id}>
-                  <TableRow hover>
-                    <TableCell align="left">{access.GameName}</TableCell>
-                    <TableCell align="left">
-                      {access.doors && access.doors.length > 1 ? (
-                        <Box display="flex" alignItems="center">
-                          <IconButton
-                            size="small"
-                            onClick={() => handleRowClick(access.id)}
-                            aria-expanded={openRows[access.id]}
-                          >
-                            {openRows[access.id] ? <ExpandLess /> : <ExpandMore />}
-                          </IconButton>
-                          <Typography variant="body2" color="textSecondary" ml={1}>
-                            {access.doors.length} Doors
-                          </Typography>
-                        </Box>
-                      ) : (
-                        access.doors.map(doorId => {
-                          const door = doorsMap[doorId] || {};
-                          return `Device ${door.device || 'Unknown'}, Type ${door.type || 'Unknown'}`;
-                        }).join(', ')
-                      )}
-                    </TableCell>
-                    <TableCell align="center">
-                      <Tooltip title="Edit Access">
-                        <IconButton color="primary" onClick={() => handleUpdate(access.id)}>
-                          <Edit />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Delete Access">
-                        <IconButton color="secondary" onClick={() => handleDelete(access.id)}>
-                          <Delete />
-                        </IconButton>
-                      </Tooltip>
-                    </TableCell>
-                  </TableRow>
-                  {access.doors && access.doors.length > 1 && (
-                    <TableRow>
-                      <TableCell colSpan={3} sx={{ paddingBottom: 0, paddingTop: 0 }}>
-                        <Collapse in={openRows[access.id]} timeout="auto" unmountOnExit>
-                          <Box margin={1}>
-                            {access.doors.map((doorId) => {
-                              const door = doorsMap[doorId] || {};
-                              return (
-                                <Box key={doorId} sx={{ padding: 1, border: '1px solid #ddd', borderRadius: 2, mb: 1 }}>
-                                  <Typography variant="body2">
-                                    <strong>Device:</strong> {door.device || 'Unknown'}
-                                  </Typography>
-                                  <Typography variant="body2">
-                                    <strong>Type:</strong> {door.type || 'Unknown'}
-                                  </Typography>
-                                  <Typography variant="body2">
-                                    <strong>Door Number:</strong> {door.doorNumber || 'N/A'}
-                                  </Typography>
-                                </Box>
-                              );
-                            })}
+        {accesses.length === 0 ? (
+          <Typography variant="h6" align="center" color="textSecondary">
+            No access records found.
+          </Typography>
+        ) : (
+          <TableContainer component={Paper}>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell align="left">Game Name</TableCell>
+                  <TableCell align="left">Doors</TableCell>
+                  <TableCell align="center">Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {accesses.map((access) => (
+                  <React.Fragment key={access.id}>
+                    <TableRow hover>
+                      <TableCell align="left">{access.GameName}</TableCell>
+                      <TableCell align="left">
+                        {access.doors && access.doors.length > 1 ? (
+                          <Box display="flex" alignItems="center">
+                            <IconButton
+                              size="small"
+                              onClick={() => handleRowClick(access.id)}
+                              aria-expanded={openRows[access.id]}
+                            >
+                              {openRows[access.id] ? <ExpandLess /> : <ExpandMore />}
+                            </IconButton>
+                            <Typography variant="body2" color="textSecondary" ml={1}>
+                              {access.doors.length} Doors
+                            </Typography>
                           </Box>
-                        </Collapse>
+                        ) : (
+                          access.doors.map(doorId => {
+                            const door = doorsMap[doorId] || {};
+                            return `Device ${door.device || 'Unknown'}, Type ${door.type || 'Unknown'}`;
+                          }).join(', ')
+                        )}
+                      </TableCell>
+                      <TableCell align="center">
+                        <Tooltip title="Edit Access">
+                          <IconButton color="primary" onClick={() => handleUpdate(access)}>
+                            <Edit />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Delete Access">
+                          <IconButton color="secondary" onClick={() => handleDelete(access.id)}>
+                            <Delete />
+                          </IconButton>
+                        </Tooltip>
                       </TableCell>
                     </TableRow>
-                  )}
-                </React.Fragment>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                    {access.doors && access.doors.length > 1 && (
+                      <TableRow>
+                        <TableCell colSpan={3} sx={{ paddingBottom: 0, paddingTop: 0 }}>
+                          <Collapse in={openRows[access.id]} timeout="auto" unmountOnExit>
+                            <Box margin={1}>
+                              {access.doors.map((doorId) => {
+                                const door = doorsMap[doorId] || {};
+                                return (
+                                  <Box key={doorId} sx={{ padding: 1, border: '1px solid #ddd', borderRadius: 2, mb: 1 }}>
+                                    <Typography variant="body2">
+                                      <strong>Device:</strong> {door.device || 'Unknown'}
+                                    </Typography>
+                                    <Typography variant="body2">
+                                      <strong>Type:</strong> {door.type || 'Unknown'}
+                                    </Typography>
+                                    <Typography variant="body2">
+                                      <strong>Door Number:</strong> {door.doorNumber || 'N/A'}
+                                    </Typography>
+                                  </Box>
+                                );
+                              })}
+                            </Box>
+                          </Collapse>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </React.Fragment>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+      </Box>
+
+      {/* Update Access Modal */}
+      {selectedAccess && (
+        <UpdateAccessModal
+          open={modalOpen}
+          onClose={handleModalClose}
+          access={selectedAccess}
+          onAccessUpdated={(updatedAccess) => {
+            setAccesses(accesses.map(acc => acc.id === updatedAccess.id ? updatedAccess : acc));
+            handleModalClose();
+          }}
+        />
       )}
-    </Box>
     </Layout>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Typography, Paper, Card, CardContent, CardActions, IconButton, Tooltip, Modal, TextField, Divider } from '@mui/material';
+import { Box, Button, Typography, Card, CardContent, CardActions, IconButton, Tooltip, Modal, TextField, Divider } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import axiosInstance from '../../../axiosInstance'; // Adjust the path if needed
@@ -11,7 +11,7 @@ const Config = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState(null);
-  const [editFormData, setEditFormData] = useState({ device_ip: '', port: '', nb_doors: '' });
+  const [editFormData, setEditFormData] = useState({ ip: '', port: '', doors: '' });
 
   useEffect(() => {
     // Fetch devices from backend when component mounts
@@ -20,9 +20,9 @@ const Config = () => {
         const response = await axiosInstance.get('/device/all/');
         setDevices(response.data.map(device => ({
           id: device.DeviceId,
-          device_ip: device.device_ip,
+          ip: device.device_ip,
           port: device.port,
-          nb_doors: device.nb_doors,
+          doors: device.nb_doors,
         })));
       } catch (error) {
         console.error('Error fetching devices:', error);
@@ -35,30 +35,56 @@ const Config = () => {
   const handleAddDevice = (device) => {
     setDevices([...devices, {
       id: device.DeviceId,
-      device_ip: device.device_ip,
+      ip: device.device_ip,
       port: device.port,
-      nb_doors: device.nb_doors,
+      doors: device.nb_doors,
     }]);
   };
 
   const handleEditDevice = async () => {
+    if (!editFormData.ip || !editFormData.port || !editFormData.doors) {
+      console.error('Validation failed: All fields are required.');
+      return;
+    }
+  
     try {
-      const response = await axiosInstance.put(`/device/update/${selectedDevice.id}/`, editFormData);
-      setDevices(devices.map(d => d.id === response.data.DeviceId ? response.data : d));
+      // Préparez les données à envoyer
+      const formattedData = {
+        device_ip: editFormData.ip,
+        port: editFormData.port,
+        nb_doors: editFormData.doors
+      };
+      
+      // Effectuez la requête PUT pour mettre à jour l'appareil
+      const response = await axiosInstance.put(`/device/update/${selectedDevice.id}/`, formattedData);
+      
+      // Mettez à jour la liste des appareils avec les nouvelles données
+      setDevices(devices.map(d => d.id === response.data.DeviceId ? {
+        ...d,
+        ip: response.data.device_ip,
+        port: response.data.port,
+        doors: response.data.nb_doors
+      } : d));
+  
+      // Fermez la modal
       setIsEditModalOpen(false);
     } catch (error) {
-      console.error('Error updating device:', error);
+      console.error('Error updating device:', error.response?.data || error.message);
     }
   };
+  
+  
+  
 
   const handleDeleteDevice = async (id) => {
     try {
-      await axiosInstance.delete(`/device/delete/${id}/`);
+      const response = await axiosInstance.delete(`/device/delete/${id}/`);
       setDevices(devices.filter(device => device.id !== id));
     } catch (error) {
-      console.error('Error deleting device:', error);
+      console.error('Error deleting device:', error.response?.data || error.message);
     }
   };
+  
 
   const handleEditChange = (e) => {
     setEditFormData({
@@ -83,18 +109,18 @@ const Config = () => {
             <Card key={device.id} sx={{ width: 300 }}>
               <CardContent>
                 <Typography variant="h6">{`ID: ${device.id}`}</Typography>
-                <Typography variant="body1">{`IP Address: ${device.device_ip}`}</Typography>
+                <Typography variant="body1">{`IP Address: ${device.ip}`}</Typography>
                 <Typography variant="body1">{`Port: ${device.port}`}</Typography>
-                <Typography variant="body1">{`Number of Doors: ${device.nb_doors}`}</Typography>
+                <Typography variant="body1">{`Number of Doors: ${device.doors}`}</Typography>
               </CardContent>
               <CardActions>
                 <Tooltip title="Edit">
                   <IconButton color="primary" onClick={() => {
                     setSelectedDevice(device);
                     setEditFormData({
-                      device_ip: device.device_ip,
+                      ip: device.ip,
                       port: device.port,
-                      nb_doors: device.nb_doors,
+                      doors: device.doors,
                     });
                     setIsEditModalOpen(true);
                   }}>
@@ -138,8 +164,8 @@ const Config = () => {
             <Divider />
             <TextField
               label="IP Address"
-              name="device_ip"
-              value={editFormData.device_ip}
+              name="ip"
+              value={editFormData.ip}
               onChange={handleEditChange}
               fullWidth
               margin="normal"
@@ -154,8 +180,8 @@ const Config = () => {
             />
             <TextField
               label="Number of Doors"
-              name="nb_doors"
-              value={editFormData.nb_doors}
+              name="doors"
+              value={editFormData.doors}
               onChange={handleEditChange}
               fullWidth
               margin="normal"

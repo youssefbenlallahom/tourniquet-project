@@ -22,6 +22,7 @@ const Calendar = () => {
   const [startTime, setStartTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
   const [selectedAccess, setSelectedAccess] = useState([]);
+  const [currentEvent, setCurrentEvent] = useState(null);
 
   useEffect(() => {
     const fetchAccesses = async () => {
@@ -68,53 +69,58 @@ const Calendar = () => {
       alert('Please fill out all required fields.');
       return;
     }
-
+  
     const startDateTime = new Date(selectedDate);
     startDateTime.setHours(startTime.getHours(), startTime.getMinutes());
-
+  
     const endDateTime = new Date(selectedDate);
     endDateTime.setHours(endTime.getHours(), endTime.getMinutes());
-
+  
     if (!isValid(startDateTime) || !isValid(endDateTime)) {
       alert('Invalid date-time values. Please check your input.');
       return;
     }
-
+  
     if (isBefore(endDateTime, startDateTime)) {
       alert('End time must be after start time.');
       return;
     }
-
+  
+    const eventData = {
+      access: selectedAccess,  // Make sure this is just an array of IDs
+      startTime: startDateTime.toISOString(),
+      endTime: endDateTime.toISOString(),
+    };
+  
     try {
-      const newEvent = {
-        id: events.length + 1,
-        title: `Timezone for ${selectedAccess}`,
-        start: startDateTime,
-        end: endDateTime,
-        accessId: selectedAccess
-      };
-
-      setEvents([...events, newEvent]);
-
-      const response = await axiosInstance.post('/timezone/create/', {
-        access: selectedAccess,
-        startTime: startDateTime.toISOString(),
-        endTime: endDateTime.toISOString(),
-      });
-
-      if (response.status === 201) {
-        setOpen(false);
+      if (currentEvent) {
+        // Update existing event
+        await axiosInstance.put(`/timezone/update/${currentEvent.id}/`, eventData);
+        setEvents(events.map(event => event.id === currentEvent.id ? { ...event, ...eventData, start: startDateTime, end: endDateTime } : event));
       } else {
-        alert('Failed to create timezone');
+        // Create new event
+        const response = await axiosInstance.post('/timezone/create/', eventData);
+        if (response.status === 201) {
+          const newEvent = { ...eventData, id: response.data.id, title: `Timezone for ${selectedAccess.join(', ')}`, start: startDateTime, end: endDateTime };
+          setEvents([...events, newEvent]);
+        } else {
+          alert('Failed to create timezone');
+        }
       }
+      
+      setOpen(false);
     } catch (error) {
-      console.error('Error creating timezone:', error);
+      console.error('Error creating or updating timezone:', error);
     }
-
+  
+    // Reset states
     setSelectedDate(null);
     setStartTime(null);
     setEndTime(null);
+    setSelectedAccess([]);
+    setCurrentEvent(null);
   };
+  
 
   const handleDelete = async (id) => {
     try {
@@ -125,11 +131,20 @@ const Calendar = () => {
     }
   };
 
+  const handleEventSelect = (event) => {
+    setSelectedDate(event.start);
+    setStartTime(event.start);
+    setEndTime(event.end);
+    setSelectedAccess(event.accessId);
+    setCurrentEvent(event);
+    setOpen(true);
+  };
+
   return (
     <Layout>
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <Box display="flex" flexDirection="column" gap={1.5} p={2}>
-          <Typography variant="h6" sx={{ mb: 1 }}>Select The Access and Create Timezone</Typography>
+          <Typography variant="h6" sx={{ mb: 1 }}>Manage Timezones</Typography>
           <FormControl fullWidth sx={{ mb: 1 }}>
             <InputLabel>Access</InputLabel>
             <Select
@@ -155,7 +170,7 @@ const Calendar = () => {
           <Button
             variant="contained"
             color="secondary"
-            onClick={() => setOpen(true)}
+            onClick={() => { setOpen(true); setCurrentEvent(null); }}
             sx={{ maxWidth: '200px', fontSize: '14px' }}
           >
             Create Timezone
@@ -167,7 +182,7 @@ const Calendar = () => {
               events={events}
               startAccessor="start"
               endAccessor="end"
-              style={{ height: 400 }}
+              style={{ height: 350 }}
               selectable
               onSelectSlot={(slotInfo) => {
                 setSelectedDate(slotInfo.start);
@@ -175,7 +190,7 @@ const Calendar = () => {
                 setEndTime(slotInfo.end);
                 setOpen(true);
               }}
-              onSelectEvent={(event) => console.log(event)}
+              onSelectEvent={handleEventSelect}
             />
           </Box>
 
@@ -198,7 +213,7 @@ const Calendar = () => {
               }}
             >
               <Typography variant="h6" gutterBottom>
-                Create Timezone
+                {currentEvent ? 'Update Timezone' : 'Create Timezone'}
               </Typography>
 
               <FormControl fullWidth sx={{ mb: 1 }}>
@@ -239,7 +254,7 @@ const Calendar = () => {
 
               <Box mt={2} display="flex" justifyContent="space-between">
                 <Button variant="contained" color="primary" size="small" onClick={handleConfirm}>
-                  Confirm
+                  {currentEvent ? 'Update' : 'Confirm'}
                 </Button>
                 <Button variant="outlined" size="small" onClick={() => setOpen(false)}>
                   Cancel

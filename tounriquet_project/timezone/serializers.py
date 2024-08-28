@@ -10,7 +10,6 @@ class TimezoneSerializer(serializers.ModelSerializer):
         
 class UpdateTimezoneSerializer(serializers.ModelSerializer):
     access = serializers.PrimaryKeyRelatedField(many=True, queryset=Access.objects.all())
-
     class Meta:
         model = Timezone
         fields = '__all__'

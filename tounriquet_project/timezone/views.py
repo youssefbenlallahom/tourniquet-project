@@ -27,25 +27,17 @@ def view_timezones(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_timezones(request):
+    print(request.data)
+    
+    # Check for permission
     if not request.user.is_staff and not request.user.is_superuser:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
-
-    # Handling multiple access IDs
-    access_ids = request.data.get('access', [])
-
-    if not isinstance(access_ids, list):
-        return Response({'error': 'access must be a list of integers.'}, status=status.HTTP_400_BAD_REQUEST)
-
-    # Validate and process the timezone data
-    serializer = TimezoneSerializer(data=request.data)
+    
+    # Use the UpdateTimezoneSerializer to validate and save the data
+    serializer = UpdateTimezoneSerializer(data=request.data)
+    
     if serializer.is_valid():
-        for access_id in access_ids:
-            # Assuming Access is a related model and you need to handle it somehow
-            # You might want to check if each access ID exists or link them
-            if not Access.objects.filter(id=access_id).exists():
-                return Response({'error': f'Access ID {access_id} does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        serializer.save()
+        serializer.save()  # Save the Timezone instance along with associated Access objects
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -67,17 +59,18 @@ def delete_timezones(request, TimezoneId):
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_timezones(request, TimezoneId):
+    print(request.data)
     if not request.user.is_staff and not request.user.is_superuser:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
+    
     try:
-        timzone_instance = Timezone.objects.get(TimezoneId=TimezoneId,user=request.user)
+        timezone_instance = Timezone.objects.get(TimezoneId=TimezoneId)
     except Timezone.DoesNotExist:
         return Response({'error': 'Timezone not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-    serializer = UpdateTimezoneSerializer(timzone_instance, data=request.data)
+    serializer = UpdateTimezoneSerializer(timezone_instance, data=request.data, partial=True)  # Partial update
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data)
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
