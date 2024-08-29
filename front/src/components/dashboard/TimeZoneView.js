@@ -1,47 +1,30 @@
 import React from 'react';
-import { Box, Button, IconButton, Typography } from '@mui/material';
+import { Box, Typography, IconButton } from '@mui/material';
+import { format } from 'date-fns';
 import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
 
-const TimeZoneView = ({ rows, accessMap, onDelete, onEdit }) => {
+const TimeZoneView = ({ rows, accessMap, onDelete }) => {
   return (
     <Box>
-      <Typography variant="h6" gutterBottom>
-        Timezones
-      </Typography>
-      {rows.length === 0 ? (
-        <Typography variant="body2">No timezones available.</Typography>
-      ) : (
-        rows.map((row) => (
-          <Box
-            key={row.id}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              p: 1,
-              borderBottom: '1px solid #ccc',
-            }}
-          >
-            <Box>
-              <Typography variant="body1">
-                {`Timezone for ${row.accessId.map(id => accessMap[id] || 'Unknown Access').join(', ')}`}
-              </Typography>
-              <Typography variant="body2">
-                {`Start: ${new Date(row.start).toLocaleString()} - End: ${new Date(row.end).toLocaleString()}`}
-              </Typography>
-            </Box>
-            <Box>
-              <IconButton onClick={() => onEdit(row)} color="primary">
-                <EditIcon />
-              </IconButton>
-              <IconButton onClick={() => onDelete(row.id)} color="error">
-                <DeleteIcon />
-              </IconButton>
-            </Box>
+      {rows.map((event) => {
+        const formattedStart = event.start instanceof Date && !isNaN(event.start.getTime())
+          ? format(event.start, 'yyyy-MM-dd HH:mm')
+          : 'Invalid start date';
+        const formattedEnd = event.end instanceof Date && !isNaN(event.end.getTime())
+          ? format(event.end, 'yyyy-MM-dd HH:mm')
+          : 'Invalid end date';
+        const accessNames = event.accessId.map(id => accessMap[id] || 'Unknown Access').join(', '); // Use GameName
+        return (
+          <Box key={event.id} sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
+            <Typography variant="body1" sx={{ flexGrow: 1 }}>
+              {event.title} ({accessNames}) - Start: {formattedStart} - End: {formattedEnd}
+            </Typography>
+            <IconButton onClick={() => onDelete(event.id)}>
+              <DeleteIcon />
+            </IconButton>
           </Box>
-        ))
-      )}
+        );
+      })}
     </Box>
   );
 };
