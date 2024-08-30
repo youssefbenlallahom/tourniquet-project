@@ -13,11 +13,15 @@ const TimeZoneView = ({ rows, accessMap, onDelete }) => {
         const formattedEnd = event.end instanceof Date && !isNaN(event.end.getTime())
           ? format(event.end, 'yyyy-MM-dd HH:mm')
           : 'Invalid end date';
-        const accessNames = event.accessId.map(id => accessMap[id] || 'Unknown Access').join(', '); // Use GameName
+
+        const accessNames = Array.isArray(event.accessId)
+          ? event.accessId.map(id => accessMap[id] || 'Unknown Access').join(', ')
+          : 'Unknown Access';
+
         return (
           <Box key={event.id} sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
             <Typography variant="body1" sx={{ flexGrow: 1 }}>
-              {event.title} ({accessNames}) - Start: {formattedStart} - End: {formattedEnd}
+              {event.title} - Start: {formattedStart} - End: {formattedEnd}
             </Typography>
             <IconButton onClick={() => onDelete(event.id)}>
               <DeleteIcon />

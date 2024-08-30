@@ -44,24 +44,31 @@ const Calendar = () => {
 
   useEffect(() => {
     const fetchTimezones = async () => {
-      try {
-        const response = await axiosInstance.get('/timezone/all/');
-        const fetchedEvents = response.data.map((timezone) => ({
-          id: timezone.TimezoneId,
-          title: `Timezone for ${timezone.access.map(id => accessMap[id] || 'Unknown Access').join(', ')}`,
-          start: new Date(timezone.startTime),
-          end: new Date(timezone.endTime),
-          accessId: timezone.access
-        }));
-        setEvents(fetchedEvents);
-      } catch (error) {
-        console.error('Error fetching timezones:', error);
+      if (Object.keys(accessMap).length > 0) {
+        try {
+          const response = await axiosInstance.get('/timezone/all/');
+          const fetchedEvents = response.data.map((timezone) => {
+            const accessIds = Array.isArray(timezone.access)
+              ? timezone.access.map(item => item.id)
+              : [];
+            
+            const eventAccessNames = accessIds.map(id => accessMap[id] || 'Unknown Access');
+            return {
+              id: timezone.TimezoneId,
+              title: `Timezone for ${eventAccessNames.join(', ')}`,
+              start: new Date(timezone.startTime),
+              end: new Date(timezone.endTime),
+              accessId: accessIds
+            };
+          });
+          setEvents(fetchedEvents);
+        } catch (error) {
+          console.error('Error fetching timezones:', error);
+        }
       }
     };
-
-    if (Object.keys(accessMap).length > 0) {
-      fetchTimezones();
-    }
+  
+    fetchTimezones();
   }, [accessMap]);
 
   const handleConfirm = async () => {
@@ -69,58 +76,63 @@ const Calendar = () => {
       alert('Please fill out all required fields.');
       return;
     }
-  
+
     const startDateTime = new Date(selectedDate);
     startDateTime.setHours(startTime.getHours(), startTime.getMinutes());
-  
+
     const endDateTime = new Date(selectedDate);
     endDateTime.setHours(endTime.getHours(), endTime.getMinutes());
-  
+
     if (!isValid(startDateTime) || !isValid(endDateTime)) {
       alert('Invalid date-time values. Please check your input.');
       return;
     }
-  
+
     if (isBefore(endDateTime, startDateTime)) {
       alert('End time must be after start time.');
       return;
     }
-  
+
     const eventData = {
-      access: selectedAccess,  // Make sure this is just an array of IDs
+      access: selectedAccess,
       startTime: startDateTime.toISOString(),
       endTime: endDateTime.toISOString(),
     };
-  
+
     try {
       if (currentEvent) {
-        // Update existing event
         await axiosInstance.put(`/timezone/update/${currentEvent.id}/`, eventData);
-        setEvents(events.map(event => event.id === currentEvent.id ? { ...event, ...eventData, start: startDateTime, end: endDateTime } : event));
+        setEvents(events.map(event => event.id === currentEvent.id
+          ? { ...event, ...eventData, start: startDateTime, end: endDateTime, title: `Timezone for ${selectedAccess.map(id => accessMap[id] || 'Unknown Access').join(', ')}` }
+          : event
+        ));
       } else {
-        // Create new event
         const response = await axiosInstance.post('/timezone/create/', eventData);
         if (response.status === 201) {
-          const newEvent = { ...eventData, id: response.data.id, title: `Timezone for ${selectedAccess.join(', ')}`, start: startDateTime, end: endDateTime };
+          const newEvent = {
+            ...eventData,
+            id: response.data.id,
+            title: `Timezone for ${selectedAccess.map(id => accessMap[id] || 'Unknown Access').join(', ')}`,
+            start: startDateTime,
+            end: endDateTime
+          };
           setEvents([...events, newEvent]);
         } else {
           alert('Failed to create timezone');
         }
       }
-      
+
       setOpen(false);
     } catch (error) {
       console.error('Error creating or updating timezone:', error);
     }
-  
-    // Reset states
+
     setSelectedDate(null);
     setStartTime(null);
     setEndTime(null);
     setSelectedAccess([]);
     setCurrentEvent(null);
   };
-  
 
   const handleDelete = async (id) => {
     try {
@@ -135,7 +147,7 @@ const Calendar = () => {
     setSelectedDate(event.start);
     setStartTime(event.start);
     setEndTime(event.end);
-    setSelectedAccess(event.accessId);
+    setSelectedAccess(event.accessId || []);
     setCurrentEvent(event);
     setOpen(true);
   };
@@ -253,11 +265,9 @@ const Calendar = () => {
               />
 
               <Box mt={2} display="flex" justifyContent="space-between">
-                <Button variant="contained" color="primary" size="small" onClick={handleConfirm}>
-                  {currentEvent ? 'Update' : 'Confirm'}
-                </Button>
-                <Button variant="outlined" size="small" onClick={() => setOpen(false)}>
-                  Cancel
+                <Button variant="outlined" onClick={() => setOpen(false)}>Cancel</Button>
+                <Button variant="contained" color="primary" onClick={handleConfirm}>
+                  {currentEvent ? 'Update' : 'Create'}
                 </Button>
               </Box>
             </Box>
