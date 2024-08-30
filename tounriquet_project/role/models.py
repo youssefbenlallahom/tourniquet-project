@@ -7,4 +7,4 @@ class Role(models.Model):
     roleName = models.CharField(max_length=50)
     type = models.CharField(max_length=5, choices=[('E', 'e'), ('S', 's'), ("E/S", 'e/s')])
     def __str__(self):
-        return f"Role {self.name}"
+        return f"Role {self.roleName}"

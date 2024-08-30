@@ -13,12 +13,15 @@ class AssignmentSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
 class UpdateAssignmentSerializer(serializers.ModelSerializer):
-    access_ids = serializers.PrimaryKeyRelatedField(many=True, queryset=Access.objects.all())
-    timezone_ids = serializers.PrimaryKeyRelatedField(many=True, queryset=Timezone.objects.all())
+    access_ids = serializers.PrimaryKeyRelatedField(many=True, queryset=Access.objects.all(), required=False)
+    timezone_ids = serializers.PrimaryKeyRelatedField(many=True, queryset=Timezone.objects.all(), required=False)
+    role = serializers.PrimaryKeyRelatedField(queryset=Role.objects.all(), required=False)
 
     class Meta:
-        model = Access
+        model = Assignment
         fields = '__all__'
+        
+        
 class Assignment_AccessSerializer(serializers.ModelSerializer):
     assignment_id = serializers.PrimaryKeyRelatedField(queryset=Assignment.objects.all(), required=True, allow_null=False)
     access_id = serializers.PrimaryKeyRelatedField(queryset=Access.objects.all(), required=True, allow_null=False)
