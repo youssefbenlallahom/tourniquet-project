@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Box,
   Button,
   TextField,
   Typography,
@@ -11,8 +10,10 @@ import {
   Chip,
   Stack,
   CircularProgress,
-  Divider
+  Divider,
+  IconButton
 } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 import axiosInstance from '../../../axiosInstance';
 import Layout from '../../../Layout';
 import { useNavigate } from 'react-router-dom';
@@ -132,14 +133,12 @@ const AddAssignment = () => {
     setLoading(true);
 
     const newAssignment = {
-      role: selectedRole,
+      role: selectedRole || null,
       braceletId,
       color,
       name,
-      access_timezone_associations: accessTimezoneAssociations.map(association => ({
-        access_id: association.accessId,
-        timezone_ids: association.timezones
-      }))
+      access_ids: accessTimezoneAssociations.map(association => association.accessId),
+      timezone_ids: accessTimezoneAssociations.flatMap(association => association.timezones)
     };
 
     try {
@@ -158,161 +157,168 @@ const AddAssignment = () => {
 
   return (
     <Layout>
-      <Box p={4} bgcolor="#f5f5f5" borderRadius="8px" boxShadow={3}>
-        <Typography variant="h5" gutterBottom color="#fffff">
-          Add Assignment
+      <Typography variant="h5" gutterBottom color="#1976d2" sx={{ p: 4 }}>
+        Add Assignment
+      </Typography>
+      <Divider sx={{ mb: 4 }} />
+
+      <TextField
+        label="Name"
+        fullWidth
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        sx={{ mb: 2 }}
+        variant="outlined"
+        color="primary"
+      />
+      <TextField
+        label="Bracelet ID"
+        fullWidth
+        value={braceletId}
+        onChange={(e) => setBraceletId(e.target.value)}
+        sx={{ mb: 2 }}
+        variant="outlined"
+        color="primary"
+      />
+      <TextField
+        label="Color"
+        fullWidth
+        value={color}
+        onChange={(e) => setColor(e.target.value)}
+        sx={{ mb: 2 }}
+        variant="outlined"
+        color="primary"
+      />
+      <FormControl fullWidth sx={{ mb: 2 }}>
+        <InputLabel>Role</InputLabel>
+        <Select
+          value={selectedRole}
+          onChange={(e) => setSelectedRole(e.target.value)}
+          variant="outlined"
+          color="primary"
+        >
+          {roles.map((role) => (
+            <MenuItem key={role.id} value={role.id}>
+              {role.roleName}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      <Typography variant="h6" gutterBottom color="#1976d2" sx={{ mb: 2 }}>
+        Add Access and Timezone
+      </Typography>
+      <Stack direction="row" spacing={1} sx={{ mb: 2 }} >
+        <FormControl size="small" sx={{ flex: 1 }}>
+          <InputLabel>Access</InputLabel>
+          <Select
+            value={selectedAccess}
+            onChange={(e) => setSelectedAccess(e.target.value)}
+            variant="outlined"
+            color="primary"
+            size="small"
+          >
+            {accesses.map((access) => (
+              <MenuItem key={access.id} value={access.id}>
+                {access.GameName}
+              </MenuItem>
+            ))}
+          </Select>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleAddAccess}
+            sx={{ mt: 1 }}
+            disabled={!selectedAccess}
+            size="small"
+          >
+            Add
+          </Button>
+        </FormControl>
+
+        <FormControl size="small" sx={{ flex: 1 }}>
+          <InputLabel>Timezone</InputLabel>
+          <Select
+            value={selectedTimezone}
+            onChange={(e) => setSelectedTimezone(e.target.value)}
+            variant="outlined"
+            color="primary"
+            size="small"
+            disabled={!selectedAccess}
+          >
+            {filteredTimezones.map((timezone) => (
+              <MenuItem key={timezone.TimezoneId} value={timezone.TimezoneId}>
+                {formatDateTime(timezone.startTime)} - {formatDateTime(timezone.endTime)}
+              </MenuItem>
+            ))}
+          </Select>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleAddTimezone}
+            sx={{ mt: 1 }}
+            disabled={!selectedTimezone}
+            size="small"
+          >
+            Add
+          </Button>
+        </FormControl>
+      </Stack>
+
+      <Typography variant="h6" gutterBottom color="#1976d2" sx={{ mb: 2 }}>
+        Access and Timezone Associations
+      </Typography>
+      {accessTimezoneAssociations.length === 0 ? (
+        <Typography variant="body2" color="textSecondary">
+          No access and timezone associations added yet.
         </Typography>
-        <Divider sx={{ mb: 4 }} />
-
-        <Box component="form" noValidate autoComplete="off">
-          <TextField
-            label="Name"
-            fullWidth
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            sx={{ mb: 2 }}
-            variant="outlined"
-          />
-          <TextField
-            label="Bracelet ID"
-            fullWidth
-            value={braceletId}
-            onChange={(e) => setBraceletId(e.target.value)}
-            sx={{ mb: 2 }}
-            variant="outlined"
-          />
-          <TextField
-            label="Color"
-            fullWidth
-            value={color}
-            onChange={(e) => setColor(e.target.value)}
-            sx={{ mb: 2 }}
-            variant="outlined"
-          />
-          <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel>Role</InputLabel>
-            <Select
-              value={selectedRole}
-              onChange={(e) => setSelectedRole(e.target.value)}
-              variant="outlined"
-            >
-              {roles.map((role) => (
-                <MenuItem key={role.id} value={role.id}>
-                  {role.roleName}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <Box display="flex" flexDirection="column" sx={{ mb: 4 }}>
-            <Box display="flex" mb={2}>
-              <FormControl fullWidth sx={{ mr: 2 }}>
-                <InputLabel>Access</InputLabel>
-                <Select
-                  value={selectedAccess}
-                  onChange={(e) => setSelectedAccess(e.target.value)}
-                  variant="outlined"
-                >
-                  {accesses.map((access) => (
-                    <MenuItem key={access.id} value={access.id}>
-                      {access.GameName}
-                    </MenuItem>
-                  ))}
-                </Select>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleAddAccess}
-                  sx={{ mt: 2 }}
-                  disabled={!selectedAccess}
-                >
-                  Add Access
-                </Button>
-              </FormControl>
-
-              <FormControl fullWidth>
-                <InputLabel>Timezone</InputLabel>
-                <Select
-                  value={selectedTimezone}
-                  onChange={(e) => setSelectedTimezone(e.target.value)}
-                  variant="outlined"
-                  disabled={!selectedAccess}
-                >
-                  {filteredTimezones.map((timezone) => (
-                    <MenuItem key={timezone.TimezoneId} value={timezone.TimezoneId}>
-                      {formatDateTime(timezone.startTime)} - {formatDateTime(timezone.endTime)}
-                    </MenuItem>
-                  ))}
-                </Select>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleAddTimezone}
-                  sx={{ mt: 2 }}
-                  disabled={!selectedTimezone}
-                >
-                  Add Timezone
-                </Button>
-              </FormControl>
-            </Box>
-
-            <Box>
-              <Typography variant="h6" gutterBottom color="#1976d2">
-                Access and Timezone Associations
+      ) : (
+        accessTimezoneAssociations.map(association => (
+          <Stack key={association.accessId} mb={2} p={2} bgcolor="#f0f0f0" borderRadius="4px">
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Typography variant="body1" fontWeight="bold">
+                Access {association.accessId}
               </Typography>
-              {accessTimezoneAssociations.map(association => (
-                <Box key={association.accessId} mb={2} p={2} bgcolor="#fff" borderRadius="4px" boxShadow={1}>
-                  <Box mb={1}>
+              <IconButton
+                color="error"
+                onClick={() => handleRemoveAccess(association.accessId)}
+                size="small"
+              >
+                <DeleteIcon />
+              </IconButton>
+            </Stack>
+            <Stack direction="row" spacing={1} mt={1}>
+              {association.timezones.length === 0 ? (
+                <Typography variant="body2" color="textSecondary">
+                  No timezones added.
+                </Typography>
+              ) : (
+                association.timezones.map(timezoneId => {
+                  const timezone = timezones.find(tz => tz.TimezoneId === timezoneId);
+                  return timezone ? (
                     <Chip
-                      label={`Access: ${accesses.find(a => a.id === association.accessId)?.GameName || 'Unknown'}`}
-                      sx={{ backgroundColor: '#1976d2', color: '#fff' }} // Placeholder color
+                      key={timezone.TimezoneId}
+                      label={`${formatDateTime(timezone.startTime)} - ${formatDateTime(timezone.endTime)}`}
+                      onDelete={() => handleRemoveTimezone(association.accessId, timezone.TimezoneId)}
+                      deleteIcon={<DeleteIcon />}
                     />
-                  </Box>
-                  <Stack direction="row" spacing={1}>
-                    {association.timezones.map(timezoneId => {
-                      const timezone = timezones.find(tz => tz.TimezoneId === timezoneId);
-                      return (
-                        <Chip
-                          key={timezoneId}
-                          label={timezone ? `${formatDateTime(timezone.startTime)} - ${formatDateTime(timezone.endTime)}` : 'Unknown'}
-                          onDelete={() => handleRemoveTimezone(association.accessId, timezoneId)}
-                        />
-                      );
-                    })}
-                  </Stack>
-                  <Button
-                    variant="outlined"
-                    color="error"
-                    onClick={() => handleRemoveAccess(association.accessId)}
-                    sx={{ mt: 2 }}
-                  >
-                    Remove Access
-                  </Button>
-                </Box>
-              ))}
-            </Box>
-          </Box>
+                  ) : null;
+                })
+              )}
+            </Stack>
+          </Stack>
+        ))
+      )}
 
-          <Box display="flex" justifyContent="center" mt={4}>
-  <Button
-    variant="contained"
-    color="primary"
-    onClick={handleAddAssignment}
-    disabled={loading}
-    sx={{
-      width: '200px', // Ajuste la largeur du bouton
-      height: '50px', // Ajuste la hauteur du bouton
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontSize: '16px', // Ajuste la taille du texte
-    }}
-  >
-    {loading ? <CircularProgress size={24} color="inherit" /> : 'Submit'}
-  </Button>
-</Box>
-        </Box>
-      </Box>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={handleAddAssignment}
+        disabled={loading}
+        sx={{ mt: 3 }}
+      >
+        {loading ? <CircularProgress size={24} /> : 'Add Assignment'}
+      </Button>
     </Layout>
   );
 };

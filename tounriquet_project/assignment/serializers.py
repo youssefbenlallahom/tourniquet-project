@@ -5,17 +5,17 @@ from access.serializers import AccessSerializer
 from timezone.serializers import TimezoneSerializer
 
 class AssignmentSerializer(serializers.ModelSerializer):
-    role = RoleSerializer()
-    access_ids = AccessSerializer(many=True)  # Utilisez `many=True` pour `ManyToMany`
-    timezone_ids = TimezoneSerializer(many=True)  # Utilisez `many=True` pour `ManyToMany`
+    role = RoleSerializer(read_only=True)
+    access_ids = AccessSerializer(many=True,read_only=True)  # Utilisez `many=True` pour `ManyToMany`
+    timezone_ids = TimezoneSerializer(many=True,read_only=True)  # Utilisez `many=True` pour `ManyToMany`
     class Meta:
         model = Assignment
         fields = '__all__'
         
 class UpdateAssignmentSerializer(serializers.ModelSerializer):
-    access_ids = serializers.PrimaryKeyRelatedField(many=True, queryset=Access.objects.all(), required=False)
-    timezone_ids = serializers.PrimaryKeyRelatedField(many=True, queryset=Timezone.objects.all(), required=False)
-    role = serializers.PrimaryKeyRelatedField(queryset=Role.objects.all(), required=False)
+    access_ids = serializers.PrimaryKeyRelatedField(many=True, queryset=Access.objects.all(), required=True)
+    timezone_ids = serializers.PrimaryKeyRelatedField(many=True, queryset=Timezone.objects.all(), required=True)
+    role = serializers.PrimaryKeyRelatedField(queryset=Role.objects.all(), required=False, allow_null=True)
 
     class Meta:
         model = Assignment

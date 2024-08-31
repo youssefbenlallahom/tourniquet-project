@@ -3,7 +3,7 @@ from access.models import Access
 from timezone.models import Timezone
 from role.models import Role
 class Assignment(models.Model):
-    role = models.ForeignKey(Role, on_delete=models.CASCADE, null=True, blank=True)
+    role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, blank=True)
     braceletId = models.CharField(max_length=100)
     color = models.CharField(max_length=50)
     name = models.CharField(max_length=100)

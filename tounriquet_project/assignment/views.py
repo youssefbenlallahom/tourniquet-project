@@ -11,14 +11,16 @@ from rest_framework.permissions import IsAuthenticated
 def view_assignment(request):
     if not request.user.is_staff and not request.user.is_superuser:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
-
-    items = Assignment.objects.all()
-    if items:
+    
+    # Fetch the assignments, including related data if needed
+    items = Assignment.objects.all().select_related('role').prefetch_related('access_ids', 'timezone_ids')
+    
+    if items.exists():
         serializer = AssignmentSerializer(items, many=True)
         return Response(serializer.data)
     else:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-
+        return Response({'error': 'No assignments found.'}, status=status.HTTP_404_NOT_FOUND)
+    
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_assignment(request):
