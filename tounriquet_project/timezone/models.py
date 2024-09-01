@@ -2,7 +2,7 @@ from django.db import models
 from access.models import Access
 class Timezone(models.Model):
     TimezoneId = models.AutoField(primary_key=True)
-    access = models.ForeignKey(Access, related_name='access', on_delete=models.CASCADE)
+    access = models.ManyToManyField(Access, related_name='access')
     startTime=models.DateTimeField()
     endTime=models.DateTimeField()
 

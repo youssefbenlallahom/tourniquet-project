@@ -3,14 +3,17 @@ from door.models import Door
 from device.models import Device
 
 class DoorSerializer(serializers.ModelSerializer):
-    device_ip = serializers.CharField(source='device.device_ip', read_only=True)
-    device_name = serializers.CharField(source='device.device_name', read_only=True)
-   
     class Meta:
         model = Door
-        fields = ['id', 'device', 'device_ip', 'device_name', 'type', 'port', 'doorNumber']
+        fields = ['id', 'device', 'type', 'doorNumber']
 
     def create(self, validated_data):
         device = validated_data.pop('device')
         door = Door.objects.create(device=device, **validated_data)
         return door
+    
+class UpdateDoorSerializer(serializers.ModelSerializer):
+    device = serializers.PrimaryKeyRelatedField(many=True, queryset=Device.objects.all())
+    class Meta:
+        model = Device
+        fields = '__all__'

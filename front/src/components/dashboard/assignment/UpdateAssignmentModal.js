@@ -6,152 +6,131 @@ const UpdateAssignmentModal = ({ open, onClose, assignment, onUpdate }) => {
   const [roles, setRoles] = useState([]);
   const [accesses, setAccesses] = useState([]);
   const [timezones, setTimezones] = useState([]);
+  const [filteredTimezones, setFilteredTimezones] = useState([]);
   const [updatedAssignment, setUpdatedAssignment] = useState({
-    braceletId: '',
-    color: '',
-    name: '',
-    role: '',
-    access: '',
-    timezone: null,
+    id: assignment.id,
+    braceletId: assignment.braceletId,
+    color: assignment.color,
+    roleId: assignment.role?.id || '',
+    accessIds: assignment.access_ids.map(access => access.id) || [],
+    timezoneIds: assignment.timezone_ids.map(timezone => timezone.id) || []
   });
 
   useEffect(() => {
-    const fetchRoles = async () => {
+    const fetchRolesAndAccesses = async () => {
       try {
-        const response = await axiosInstance.get('/role/all/');
-        setRoles(response.data);
+        const rolesResponse = await axiosInstance.get('/roles/all/');
+        const accessesResponse = await axiosInstance.get('/access/all/');
+        setRoles(rolesResponse.data);
+        setAccesses(accessesResponse.data);
       } catch (error) {
-        console.error('Error fetching roles:', error);
+        console.error('Error fetching roles or accesses:', error);
       }
     };
 
-    const fetchAccesses = async () => {
-      try {
-        const response = await axiosInstance.get('/access/all/');
-        setAccesses(response.data);
-      } catch (error) {
-        console.error('Error fetching accesses:', error);
-      }
-    };
+    fetchRolesAndAccesses();
+  }, []);
 
+  useEffect(() => {
     const fetchTimezones = async () => {
       try {
-        const response = await axiosInstance.get('/timezone/all/');
-        setTimezones(response.data);
+        const timezonesResponse = await axiosInstance.get('/timezone/all/');
+        setTimezones(timezonesResponse.data);
       } catch (error) {
         console.error('Error fetching timezones:', error);
       }
     };
 
-    fetchRoles();
-    fetchAccesses();
     fetchTimezones();
   }, []);
 
   useEffect(() => {
-    if (assignment) {
-      setUpdatedAssignment({
-        braceletId: assignment.braceletId,
-        color: assignment.color,
-        name: assignment.name,
-        role: assignment.role,
-        access: assignment.access,
-        timezone: assignment.timezone,
-      });
-    }
-  }, [assignment]);
+    const filtered = timezones.filter((timezone) =>
+      updatedAssignment.accessIds.includes(timezone.accessId)
+    );
+    setFilteredTimezones(filtered);
+  }, [updatedAssignment.accessIds, timezones]);
 
-  const handleUpdate = async () => {
+  const handleInputChange = (field, value) => {
+    setUpdatedAssignment({
+      ...updatedAssignment,
+      [field]: value,
+    });
+  };
+
+  const handleSubmit = async () => {
     try {
-      const response = await axiosInstance.put(`/assignment/update/${assignment.id}/`, updatedAssignment);
-      if (response.status === 200) {
-        onUpdate(response.data);
-        onClose();
-      } else {
-        console.error('Failed to update assignment:', response.statusText);
-      }
+      const response = await axiosInstance.put(`/assignment/update/${assignment.id}/`, {
+        braceletId: updatedAssignment.braceletId,
+        color: updatedAssignment.color,
+        roleId: updatedAssignment.roleId,
+        accessIds: updatedAssignment.accessIds,
+        timezoneIds: updatedAssignment.timezoneIds
+      });
+      onUpdate(response.data);
+      onClose();
     } catch (error) {
       console.error('Error updating assignment:', error);
+      alert('Failed to update assignment. Please check the console for details.');
     }
   };
 
   return (
     <Modal open={open} onClose={onClose}>
-      <Box
-        sx={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: 400,
-          bgcolor: 'background.paper',
-          p: 4,
-          borderRadius: 2,
-          boxShadow: 3,
-        }}
-      >
-        <Typography variant="h6" gutterBottom>
-          Update Assignment
-        </Typography>
-        <TextField
-          label="Name"
-          fullWidth
-          value={updatedAssignment.name || ''}
-          onChange={(e) => setUpdatedAssignment({ ...updatedAssignment, name: e.target.value })}
-          sx={{ mb: 2 }}
-        />
+      <Box sx={{ padding: 4, backgroundColor: 'white', borderRadius: 2, maxWidth: 500, margin: 'auto', mt: '10%' }}>
+        <Typography variant="h6" mb={2}>Update Assignment</Typography>
         <TextField
           label="Bracelet ID"
           fullWidth
-          value={updatedAssignment.braceletId || ''}
-          onChange={(e) => setUpdatedAssignment({ ...updatedAssignment, braceletId: e.target.value })}
-          sx={{ mb: 2 }}
+          value={updatedAssignment.braceletId}
+          onChange={(e) => handleInputChange('braceletId', e.target.value)}
+          margin="normal"
         />
         <TextField
           label="Color"
           fullWidth
-          value={updatedAssignment.color || ''}
-          onChange={(e) => setUpdatedAssignment({ ...updatedAssignment, color: e.target.value })}
-          sx={{ mb: 2 }}
+          value={updatedAssignment.color}
+          onChange={(e) => handleInputChange('color', e.target.value)}
+          margin="normal"
         />
-        <FormControl fullWidth sx={{ mb: 2 }}>
+        <FormControl fullWidth margin="normal">
           <InputLabel>Role</InputLabel>
           <Select
-            value={updatedAssignment.role || ''}
-            onChange={(e) => setUpdatedAssignment({ ...updatedAssignment, role: e.target.value })}
+            value={updatedAssignment.roleId}
+            onChange={(e) => handleInputChange('roleId', e.target.value)}
+            label="Role"
           >
-            {roles.map(role => (
+            {roles.map((role) => (
               <MenuItem key={role.id} value={role.id}>
                 {role.roleName}
               </MenuItem>
             ))}
           </Select>
         </FormControl>
-        <FormControl fullWidth sx={{ mb: 2 }}>
-          <InputLabel>Access</InputLabel>
-          <Select
-            value={updatedAssignment.access || ''}
-            onChange={(e) => setUpdatedAssignment({ ...updatedAssignment, access: e.target.value })}
-          >
-            {accesses.map(access => (
-              <MenuItem key={access.id} value={access.id}>
-                {access.GameName}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
         <Autocomplete
-          value={updatedAssignment.timezone || null}
+          multiple
+          options={accesses}
+          getOptionLabel={(option) => option.GameName}
+          value={accesses.filter(access => updatedAssignment.accessIds.includes(access.id))}
           onChange={(event, newValue) => {
-            setUpdatedAssignment({ ...updatedAssignment, timezone: newValue });
+            handleInputChange('accessIds', newValue.map(access => access.id));
           }}
-          options={timezones}
-          getOptionLabel={(option) => `Timezone ID: ${option.TimezoneId} - ${new Date(option.startTime).toLocaleString()} to ${new Date(option.endTime).toLocaleString()}`}
-          renderInput={(params) => <TextField {...params} label="Timezone" variant="outlined" fullWidth />}
+          renderInput={(params) => <TextField {...params} label="Access" margin="normal" />}
         />
-        <Button variant="contained" color="primary" onClick={handleUpdate} sx={{ mt: 2 }}>
-          Update Assignment
-        </Button>
+        <Autocomplete
+          multiple
+          options={filteredTimezones}
+          getOptionLabel={(option) => `${option.startTime} - ${option.endTime}`}
+          value={filteredTimezones.filter(timezone => updatedAssignment.timezoneIds.includes(timezone.id))}
+          onChange={(event, newValue) => {
+            handleInputChange('timezoneIds', newValue.map(timezone => timezone.id));
+          }}
+          renderInput={(params) => <TextField {...params} label="Timezones" margin="normal" />}
+        />
+        <Box mt={3} display="flex" justifyContent="space-between">
+          <Button variant="outlined" onClick={onClose}>Cancel</Button>
+          <Button variant="contained" color="primary" onClick={handleSubmit}>Update</Button>
+        </Box>
       </Box>
     </Modal>
   );

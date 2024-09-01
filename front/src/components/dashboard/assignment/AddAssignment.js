@@ -1,5 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, TextField, Typography, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import {
+  Button,
+  TextField,
+  Typography,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Chip,
+  Stack,
+  CircularProgress,
+  Divider,
+  IconButton
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 import axiosInstance from '../../../axiosInstance';
 import Layout from '../../../Layout';
 import { useNavigate } from 'react-router-dom';
@@ -15,15 +29,20 @@ const AddAssignment = () => {
   const [selectedRole, setSelectedRole] = useState('');
   const [selectedAccess, setSelectedAccess] = useState('');
   const [selectedTimezone, setSelectedTimezone] = useState('');
-  const [associations, setAssociations] = useState([]);
+  const [accessTimezoneAssociations, setAccessTimezoneAssociations] = useState([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const formatDateTime = (dateTime) => {
+    if (!dateTime) return '';
+    const date = new Date(dateTime);
+    return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+  };
 
   useEffect(() => {
     const fetchRoles = async () => {
       try {
         const response = await axiosInstance.get('/role/all/');
-        console.log('Roles fetched:', response.data);
         setRoles(response.data);
       } catch (error) {
         console.error('Error fetching roles:', error);
@@ -33,7 +52,6 @@ const AddAssignment = () => {
     const fetchAccesses = async () => {
       try {
         const response = await axiosInstance.get('/access/all/');
-        console.log('Accesses fetched:', response.data);
         setAccesses(response.data);
       } catch (error) {
         console.error('Error fetching accesses:', error);
@@ -43,9 +61,8 @@ const AddAssignment = () => {
     const fetchTimezones = async () => {
       try {
         const response = await axiosInstance.get('/timezone/all/');
-        console.log('Timezones fetched:', response.data);
         setTimezones(response.data);
-        setFilteredTimezones(response.data); // Initialize filteredTimezones with all timezones
+        setFilteredTimezones(response.data);
       } catch (error) {
         console.error('Error fetching timezones:', error);
       }
@@ -57,45 +74,76 @@ const AddAssignment = () => {
   }, []);
 
   useEffect(() => {
-    console.log('Selected Access:', selectedAccess);
-    console.log('All Timezones:', timezones);
-
     if (selectedAccess) {
       const selectedAccessId = parseInt(selectedAccess, 10);
-      console.log('Selected Access ID:', selectedAccessId);
-
       const relatedTimezones = timezones.filter((timezone) => {
-        console.log('Checking timezone:', timezone);
-        console.log('Timezone access:', timezone.access);
-        // Check if timezone.access includes selectedAccessId
-        const accessIds = timezone.access.map(a => a.id); // Extract IDs from access
-        const includesAccess = accessIds.includes(selectedAccessId);
-        console.log('Includes Check:', includesAccess);
-        return includesAccess;
+        const accessIds = timezone.access.map(a => a.id);
+        return accessIds.includes(selectedAccessId);
       });
-
-      console.log('Filtered Timezones:', relatedTimezones);
       setFilteredTimezones(relatedTimezones);
     } else {
       setFilteredTimezones(timezones);
     }
   }, [selectedAccess, timezones]);
 
+  const handleAddAccess = () => {
+    if (selectedAccess && !accessTimezoneAssociations.some(association => association.accessId === parseInt(selectedAccess, 10))) {
+      setAccessTimezoneAssociations([...accessTimezoneAssociations, {
+        accessId: parseInt(selectedAccess, 10),
+        timezones: []
+      }]);
+      setSelectedAccess('');
+    }
+  };
+
+  const handleRemoveAccess = (accessId) => {
+    setAccessTimezoneAssociations(accessTimezoneAssociations.filter(association => association.accessId !== accessId));
+  };
+
+  const handleAddTimezone = () => {
+    if (selectedTimezone && accessTimezoneAssociations.length > 0) {
+      const updatedAssociations = accessTimezoneAssociations.map(association => {
+        if (association.accessId === parseInt(selectedAccess, 10)) {
+          return {
+            ...association,
+            timezones: [...association.timezones, parseInt(selectedTimezone, 10)]
+          };
+        }
+        return association;
+      });
+      setAccessTimezoneAssociations(updatedAssociations);
+      setSelectedTimezone('');
+    }
+  };
+
+  const handleRemoveTimezone = (accessId, timezoneId) => {
+    const updatedAssociations = accessTimezoneAssociations.map(association => {
+      if (association.accessId === accessId) {
+        return {
+          ...association,
+          timezones: association.timezones.filter(id => id !== timezoneId)
+        };
+      }
+      return association;
+    });
+    setAccessTimezoneAssociations(updatedAssociations);
+  };
+
   const handleAddAssignment = async () => {
     setLoading(true);
+
     const newAssignment = {
-      role: selectedRole,
+      role: selectedRole || null,
       braceletId,
       color,
       name,
-      access_ids: associations.map(({ accessId }) => accessId),
-      timezone_ids: associations.map(({ timezoneId }) => timezoneId),
+      access_ids: accessTimezoneAssociations.map(association => association.accessId),
+      timezone_ids: accessTimezoneAssociations.flatMap(association => association.timezones)
     };
 
     try {
       const assignmentResponse = await axiosInstance.post('/assignment/create/', newAssignment);
       if (assignmentResponse.status === 201) {
-        console.log('Assignment created successfully:', assignmentResponse.data);
         navigate('/dashboard/assignment');
       } else {
         console.error('Failed to create assignment:', assignmentResponse.statusText);
@@ -107,152 +155,170 @@ const AddAssignment = () => {
     }
   };
 
-  const handleAddAssociation = () => {
-    if (selectedAccess && selectedTimezone) {
-      setAssociations([...associations, { accessId: selectedAccess, timezoneId: selectedTimezone }]);
-      setSelectedAccess('');
-      setSelectedTimezone('');
-    }
-  };
-
-  const handleRemoveAssociation = (accessId, timezoneId) => {
-    setAssociations(associations.filter(assoc => assoc.accessId !== accessId || assoc.timezoneId !== timezoneId));
-  };
-
-  // Helper function to format date and time
-  const formatDateTime = (dateTime) => {
-    if (!dateTime) return '';
-    const date = new Date(dateTime);
-    return `${date.toLocaleDateString()} ${date.getHours()}:${date.getMinutes()}`;
-  };
-
   return (
     <Layout>
-      <Box p={4}>
-        <Typography variant="h6" gutterBottom>
-          Add Assignment
-        </Typography>
-        <TextField
-          label="Name"
-          fullWidth
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          sx={{ mb: 2 }}
-        />
-        <TextField
-          label="Bracelet ID"
-          fullWidth
-          value={braceletId}
-          onChange={(e) => setBraceletId(e.target.value)}
-          sx={{ mb: 2 }}
-        />
-        <TextField
-          label="Color"
-          fullWidth
-          value={color}
-          onChange={(e) => setColor(e.target.value)}
-          sx={{ mb: 2 }}
-        />
-        <FormControl fullWidth sx={{ mb: 2 }}>
-          <InputLabel>Role</InputLabel>
+      <Typography variant="h5" gutterBottom color="#1976d2" sx={{ p: 4 }}>
+        Add Assignment
+      </Typography>
+      <Divider sx={{ mb: 4 }} />
+
+      <TextField
+        label="Name"
+        fullWidth
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        sx={{ mb: 2 }}
+        variant="outlined"
+        color="primary"
+      />
+      <TextField
+        label="Bracelet ID"
+        fullWidth
+        value={braceletId}
+        onChange={(e) => setBraceletId(e.target.value)}
+        sx={{ mb: 2 }}
+        variant="outlined"
+        color="primary"
+      />
+      <TextField
+        label="Color"
+        fullWidth
+        value={color}
+        onChange={(e) => setColor(e.target.value)}
+        sx={{ mb: 2 }}
+        variant="outlined"
+        color="primary"
+      />
+      <FormControl fullWidth sx={{ mb: 2 }}>
+        <InputLabel>Role</InputLabel>
+        <Select
+          value={selectedRole}
+          onChange={(e) => setSelectedRole(e.target.value)}
+          variant="outlined"
+          color="primary"
+        >
+          {roles.map((role) => (
+            <MenuItem key={role.id} value={role.id}>
+              {role.roleName}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      <Typography variant="h6" gutterBottom color="#1976d2" sx={{ mb: 2 }}>
+        Add Access and Timezone
+      </Typography>
+      <Stack direction="row" spacing={1} sx={{ mb: 2 }} >
+        <FormControl size="small" sx={{ flex: 1 }}>
+          <InputLabel>Access</InputLabel>
           <Select
-            value={selectedRole}
-            onChange={(e) => setSelectedRole(e.target.value)}
+            value={selectedAccess}
+            onChange={(e) => setSelectedAccess(e.target.value)}
+            variant="outlined"
+            color="primary"
+            size="small"
           >
-            {roles.map((role) => (
-              <MenuItem key={role.id} value={role.id}>
-                {role.roleName}
+            {accesses.map((access) => (
+              <MenuItem key={access.id} value={access.id}>
+                {access.GameName}
               </MenuItem>
             ))}
           </Select>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleAddAccess}
+            sx={{ mt: 1 }}
+            disabled={!selectedAccess}
+            size="small"
+          >
+            Add
+          </Button>
         </FormControl>
 
-        <Box display="flex" sx={{ mb: 4 }}>
-          <FormControl fullWidth sx={{ mr: 2 }}>
-            <InputLabel>Access</InputLabel>
-            <Select
-              value={selectedAccess}
-              onChange={(e) => setSelectedAccess(e.target.value)}
-            >
-              {accesses.map((access) => (
-                <MenuItem key={access.id} value={access.id}>
-                  {access.GameName}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+        <FormControl size="small" sx={{ flex: 1 }}>
+          <InputLabel>Timezone</InputLabel>
+          <Select
+            value={selectedTimezone}
+            onChange={(e) => setSelectedTimezone(e.target.value)}
+            variant="outlined"
+            color="primary"
+            size="small"
+            disabled={!selectedAccess}
+          >
+            {filteredTimezones.map((timezone) => (
+              <MenuItem key={timezone.TimezoneId} value={timezone.TimezoneId}>
+                {formatDateTime(timezone.startTime)} - {formatDateTime(timezone.endTime)}
+              </MenuItem>
+            ))}
+          </Select>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleAddTimezone}
+            sx={{ mt: 1 }}
+            disabled={!selectedTimezone}
+            size="small"
+          >
+            Add
+          </Button>
+        </FormControl>
+      </Stack>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 2 }}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleAddAssociation}
-              disabled={!selectedAccess || !selectedTimezone}
-            >
-              Add Association
-            </Button>
-          </Box>
+      <Typography variant="h6" gutterBottom color="#1976d2" sx={{ mb: 2 }}>
+        Access and Timezone Associations
+      </Typography>
+      {accessTimezoneAssociations.length === 0 ? (
+        <Typography variant="body2" color="textSecondary">
+          No access and timezone associations added yet.
+        </Typography>
+      ) : (
+        accessTimezoneAssociations.map(association => (
+          <Stack key={association.accessId} mb={2} p={2} bgcolor="#f0f0f0" borderRadius="4px">
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Typography variant="body1" fontWeight="bold">
+                Access {association.accessId}
+              </Typography>
+              <IconButton
+                color="error"
+                onClick={() => handleRemoveAccess(association.accessId)}
+                size="small"
+              >
+                <DeleteIcon />
+              </IconButton>
+            </Stack>
+            <Stack direction="row" spacing={1} mt={1}>
+              {association.timezones.length === 0 ? (
+                <Typography variant="body2" color="textSecondary">
+                  No timezones added.
+                </Typography>
+              ) : (
+                association.timezones.map(timezoneId => {
+                  const timezone = timezones.find(tz => tz.TimezoneId === timezoneId);
+                  return timezone ? (
+                    <Chip
+                      key={timezone.TimezoneId}
+                      label={`${formatDateTime(timezone.startTime)} - ${formatDateTime(timezone.endTime)}`}
+                      onDelete={() => handleRemoveTimezone(association.accessId, timezone.TimezoneId)}
+                      deleteIcon={<DeleteIcon />}
+                    />
+                  ) : null;
+                })
+              )}
+            </Stack>
+          </Stack>
+        ))
+      )}
 
-          <FormControl fullWidth sx={{ ml: 2 }}>
-            <InputLabel>Timezone</InputLabel>
-            <Select
-              value={selectedTimezone}
-              onChange={(e) => setSelectedTimezone(e.target.value)}
-              disabled={!selectedAccess}
-            >
-              {filteredTimezones.map((timezone) => (
-                <MenuItem key={timezone.TimezoneId} value={timezone.TimezoneId}>
-                  {formatDateTime(timezone.startTime)} - {formatDateTime(timezone.endTime)}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Box>
-
-        <Box display="flex" flexDirection="column" sx={{ mb: 4 }}>
-          {associations.length > 0 && (
-            <Box
-              sx={{
-                padding: 2,
-                border: '1px solid #ccc',
-                borderRadius: 2,
-                minWidth: 300,
-              }}
-            >
-              <Typography variant="h6">Current Associations</Typography>
-              {associations.map(({ accessId, timezoneId }) => {
-                const access = accesses.find((a) => a.id === accessId);
-                const timezone = timezones.find((t) => t.TimezoneId === timezoneId);
-                return (
-                  <Box key={`${accessId}-${timezoneId}`} sx={{ mb: 1 }}>
-                    <Typography>
-                      {access?.GameName} → {formatDateTime(timezone?.startTime)} - {formatDateTime(timezone?.endTime)}
-                    </Typography>
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      onClick={() => handleRemoveAssociation(accessId, timezoneId)}
-                      sx={{ mt: 1 }}
-                    >
-                      Remove
-                    </Button>
-                  </Box>
-                );
-              })}
-            </Box>
-          )}
-        </Box>
-
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleAddAssignment}
-          sx={{ mt: 2 }}
-          disabled={loading}
-        >
-          {loading ? 'Adding Assignment...' : 'Add Assignment'}
-        </Button>
-      </Box>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={handleAddAssignment}
+        disabled={loading}
+        sx={{ mt: 3 }}
+      >
+        {loading ? <CircularProgress size={24} /> : 'Add Assignment'}
+      </Button>
     </Layout>
   );
 };
