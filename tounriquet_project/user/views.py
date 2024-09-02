@@ -3,13 +3,24 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, BasePermission
-from .serializers import UserSerializer
+from .serializers import UserSerializer,PasswordResetConfirmSerializer,PasswordResetRequestSerializer
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
-
+from django.core.mail import send_mail
+from django.utils import timezone
+from .models import PasswordResetToken
+from django.core.exceptions import PermissionDenied
    
 User = get_user_model()
-
+@api_view(['GET'])
+def list_users(request):
+    if not request.user.is_authenticated or not request.user.is_superuser:
+        raise PermissionDenied("You do not have permission to view this resource.")
+    
+    users = User.objects.all()
+    user_list = list(users.values('username', 'email', 'is_active', 'is_staff'))
+    
+    return Response({'users': user_list})
 class IsSuperUser(BasePermission):
     def has_permission(self, request, view):
         return request.user and request.user.is_superuser
@@ -72,3 +83,59 @@ def logout(request):
         return Response(status=status.HTTP_205_RESET_CONTENT)
     except Exception as e:
         return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
+    
+    
+@api_view(['POST'])
+def request_password_reset(request):
+    serializer = PasswordResetRequestSerializer(data=request.data)
+    if serializer.is_valid():
+        identifier = serializer.validated_data['identifier']
+        
+        try:
+            user = User.objects.get(username=identifier)
+        except User.DoesNotExist:
+            return Response({"error": "User does not exist."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Create a password reset token
+        token = PasswordResetToken.objects.create(
+            user=user,
+            expires_at=timezone.now() + timezone.timedelta(hours=1)  # Token valid for 1 hour
+        )
+
+        # Send email with password reset link
+        reset_link = f"http://127.0.0.1:3000/reset-password/{token.token}/"  # Assuming React app runs on port 3000
+        send_mail(
+            "Password Reset Request",
+            f"Click the following link to reset your password: {reset_link}",
+            'no-reply@yourdomain.com',
+            [user.email],
+            fail_silently=False,
+        )
+
+        return Response({"message": "Password reset link has been sent to the user's email."}, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def reset_password(request):
+    serializer = PasswordResetConfirmSerializer(data=request.data)
+    if serializer.is_valid():
+        token_value = serializer.validated_data['token']
+        new_password = serializer.validated_data['new_password']
+
+        try:
+            token = PasswordResetToken.objects.get(token=token_value)
+            if token.is_expired():
+                return Response({"error": "Token has expired."}, status=status.HTTP_400_BAD_REQUEST)
+
+            user = token.user
+            user.set_password(new_password)
+            user.save()
+
+            # Delete the token after it is used
+            token.delete()
+
+            return Response({"message": "Password has been reset successfully."}, status=status.HTTP_200_OK)
+        except PasswordResetToken.DoesNotExist:
+            return Response({"error": "Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
