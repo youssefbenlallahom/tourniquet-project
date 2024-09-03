@@ -7,11 +7,14 @@ import { Add as AddIcon, Delete, Edit, ExpandMore, ExpandLess } from '@mui/icons
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../../axiosInstance';
 import Layout from '../../../Layout';
+import UpdateAssignmentModal from './UpdateAssignmentModal'; // Ensure the path is correct
 
 const Assignment = () => {
   const [assignments, setAssignments] = useState([]);
   const [openRows, setOpenRows] = useState({});
   const [expandedTimezones, setExpandedTimezones] = useState({});
+  const [selectedAssignment, setSelectedAssignment] = useState(null);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
 
   const navigate = useNavigate();
 
@@ -41,8 +44,8 @@ const Assignment = () => {
   };
 
   const handleUpdate = (assignment) => {
-    // Logic to handle updating the assignment
-    // You can open a modal similar to UpdateAccessModal here
+    setSelectedAssignment(assignment);
+    setIsUpdateModalOpen(true);
   };
 
   const handleRowClick = (id) => {
@@ -143,6 +146,7 @@ const Assignment = () => {
                         </Tooltip>
                       </TableCell>
                     </TableRow>
+                    {/* Timezones and Access collapse rows */}
                     {assignment.timezone_ids && assignment.timezone_ids.length > 0 && (
                       <TableRow>
                         <TableCell colSpan={6} sx={{ paddingBottom: 0, paddingTop: 0 }}>
@@ -188,6 +192,20 @@ const Assignment = () => {
               </TableBody>
             </Table>
           </TableContainer>
+        )}
+
+        {/* Update Assignment Modal */}
+        {selectedAssignment && (
+          <UpdateAssignmentModal
+            open={isUpdateModalOpen}
+            onClose={() => setIsUpdateModalOpen(false)}
+            assignment={selectedAssignment}
+            onUpdate={(updatedData) => {
+              setAssignments(assignments.map(assignment => 
+                assignment.id === updatedData.id ? updatedData : assignment
+              ));
+            }}
+          />
         )}
       </Box>
     </Layout>

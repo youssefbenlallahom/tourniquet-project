@@ -3,36 +3,45 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, BasePermission
-from .serializers import UserSerializer,PasswordResetConfirmSerializer,PasswordResetRequestSerializer
+from .serializers import UserSerializer, PasswordResetConfirmSerializer, PasswordResetRequestSerializer
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.core.mail import send_mail
 from django.utils import timezone
 from .models import PasswordResetToken
 from django.core.exceptions import PermissionDenied
-   
+
 User = get_user_model()
-@api_view(['GET'])
-def list_users(request):
-    if not request.user.is_authenticated or not request.user.is_superuser:
-        raise PermissionDenied("You do not have permission to view this resource.")
-    
-    users = User.objects.all()
-    user_list = list(users.values('username', 'email', 'is_active', 'is_staff'))
-    
-    return Response({'users': user_list})
+
 class IsSuperUser(BasePermission):
     def has_permission(self, request, view):
         return request.user and request.user.is_superuser
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsSuperUser])
-def get_user(request):
-    user = request.user
-    return Response({'userId': user.id, 'username': user.username, 'role': user.role})
+def list_users(request):
+    """List all users except the requesting superuser."""
+    users = User.objects.exclude(id=request.user.id)
+    user_list = users.values('id', 'username', 'email', 'is_active', 'is_staff')
+    return Response({'users': user_list})
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated, IsSuperUser])
+def delete_user(request, user_id):
+    """Delete a specific user by ID."""
+    print(request.data)
+    try:
+        user = User.objects.get(id=user_id)
+        if user == request.user:
+            return Response({'error': "You cannot delete yourself."}, status=status.HTTP_400_BAD_REQUEST)
+        user.delete()
+        return Response({"message": "User deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+    except User.DoesNotExist:
+        return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['POST'])
 def login(request):
+    """Authenticate and log in a user."""
     username = request.data.get('username')
     password = request.data.get('password')
     
@@ -48,7 +57,6 @@ def login(request):
         return Response({'error': 'Invalid credentials.'}, status=status.HTTP_401_UNAUTHORIZED)
     
     refresh = RefreshToken.for_user(user)
-    
     serializer = UserSerializer(user)
     
     return Response({
@@ -58,36 +66,65 @@ def login(request):
             'access': str(refresh.access_token)
         }
     }, status=status.HTTP_200_OK)
-    
-    
+
 @api_view(['POST'])
 def register(request):
+    """Register a new user."""
     serializer = UserSerializer(data=request.data)
     if serializer.is_valid():
         user = serializer.save()
         user.set_password(request.data['password'])
+        user.is_active = True
         user.save()
         token = Token.objects.create(user=user)
-        return Response({'token': token.key, 'user': serializer.data})
+        return Response({'token': token.key, 'user': serializer.data}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def logout(request):
+    """Log out the authenticated user."""
     try:
         refresh_token = request.data.get("refresh")
         if not refresh_token:
             return Response({"detail": "Refresh token is required."}, status=status.HTTP_400_BAD_REQUEST)
 
         token = RefreshToken(refresh_token)
-        token.blacklist()  # Assurez-vous que la fonctionnalité blacklist est activée
+        token.blacklist()  # Ensure the blacklist feature is enabled
         return Response(status=status.HTTP_205_RESET_CONTENT)
     except Exception as e:
         return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsSuperUser])
+def update_user_permissions(request):
+    """Update user permissions based on the provided data."""
+    user_id = request.data.get('user_id')
+    permissions = request.data.get('permissions', {})  # Dictionary of permission fields
+
+    if not user_id or not isinstance(permissions, dict):
+        return Response({'error': 'user_id and permissions are required.'}, status=status.HTTP_400_BAD_REQUEST)
     
+    try:
+        user = User.objects.get(id=user_id)
+        
+        # Update permissions based on the provided data
+        for perm, value in permissions.items():
+            if hasattr(user, perm):
+                setattr(user, perm, value)
+            else:
+                return Response({'error': f'Permission field {perm} does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        user.save()
+        
+        return Response({'message': 'Permissions updated successfully.'}, status=status.HTTP_200_OK)
     
-    
+    except User.DoesNotExist:
+        return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
 @api_view(['POST'])
 def request_password_reset(request):
+    """Handle password reset requests."""
     serializer = PasswordResetRequestSerializer(data=request.data)
     if serializer.is_valid():
         identifier = serializer.validated_data['identifier']
@@ -118,6 +155,7 @@ def request_password_reset(request):
 
 @api_view(['POST'])
 def reset_password(request):
+    """Handle password reset confirmations."""
     serializer = PasswordResetConfirmSerializer(data=request.data)
     if serializer.is_valid():
         token_value = serializer.validated_data['token']
@@ -139,3 +177,11 @@ def reset_password(request):
         except PasswordResetToken.DoesNotExist:
             return Response({"error": "Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsSuperUser])
+def get_user(request):
+    user = request.user
+    return Response({'userId': user.id, 'username': user.username, 'role': user.role})

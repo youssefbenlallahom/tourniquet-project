@@ -1,82 +1,57 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, TextField, Typography, FormControl, InputLabel, Select, MenuItem, Autocomplete, Modal } from '@mui/material';
+import {
+  Modal, Box, TextField, Button, Typography, FormControl, InputLabel, Select, MenuItem, CircularProgress, Stack
+} from '@mui/material';
 import axiosInstance from '../../../axiosInstance';
 
 const UpdateAssignmentModal = ({ open, onClose, assignment, onUpdate }) => {
   const [roles, setRoles] = useState([]);
   const [accesses, setAccesses] = useState([]);
   const [timezones, setTimezones] = useState([]);
-  const [updatedAssignment, setUpdatedAssignment] = useState({
-    braceletId: '',
-    color: '',
-    name: '',
-    role: '',
-    access: '',
-    timezone: null,
-  });
+  const [selectedRole, setSelectedRole] = useState(assignment.role?.id || '');
+  const [selectedAccess, setSelectedAccess] = useState(assignment.access_ids || []);
+  const [selectedTimezone, setSelectedTimezone] = useState(assignment.timezone_ids || []);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchRoles = async () => {
+    const fetchData = async () => {
       try {
-        const response = await axiosInstance.get('/role/all/');
-        setRoles(response.data);
+        const [rolesResponse, accessesResponse, timezonesResponse] = await Promise.all([
+          axiosInstance.get('/role/all/'),
+          axiosInstance.get('/access/all/'),
+          axiosInstance.get('/timezone/all/')
+        ]);
+        setRoles(rolesResponse.data);
+        setAccesses(accessesResponse.data);
+        setTimezones(timezonesResponse.data);
       } catch (error) {
-        console.error('Error fetching roles:', error);
+        console.error('Error fetching data:', error);
       }
     };
-
-    const fetchAccesses = async () => {
-      try {
-        const response = await axiosInstance.get('/access/all/');
-        setAccesses(response.data);
-      } catch (error) {
-        console.error('Error fetching accesses:', error);
-      }
-    };
-
-    const fetchTimezones = async () => {
-      try {
-        const response = await axiosInstance.get('/timezone/all/');
-        setTimezones(response.data);
-      } catch (error) {
-        console.error('Error fetching timezones:', error);
-      }
-    };
-
-    fetchRoles();
-    fetchAccesses();
-    fetchTimezones();
+    fetchData();
   }, []);
 
-  useEffect(() => {
-    if (assignment) {
-      setUpdatedAssignment({
-        braceletId: assignment.braceletId,
-        color: assignment.color,
-        name: assignment.name,
-        role: assignment.role,
-        access: assignment.access,
-        timezone: assignment.timezone,
-      });
-    }
-  }, [assignment]);
-
-  const handleUpdate = async () => {
+  const handleUpdateAssignment = async () => {
+    setLoading(true);
     try {
+      const updatedAssignment = {
+        id: assignment.id,
+        role: selectedRole,
+        access_ids: selectedAccess,
+        timezone_ids: selectedTimezone,
+      };
       const response = await axiosInstance.put(`/assignment/update/${assignment.id}/`, updatedAssignment);
-      if (response.status === 200) {
-        onUpdate(response.data);
-        onClose();
-      } else {
-        console.error('Failed to update assignment:', response.statusText);
-      }
+      onUpdate(response.data);
+      onClose();
     } catch (error) {
       console.error('Error updating assignment:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={onClose} aria-labelledby="update-assignment-modal" aria-describedby="modal-to-update-assignment">
       <Box
         sx={{
           position: 'absolute',
@@ -85,73 +60,63 @@ const UpdateAssignmentModal = ({ open, onClose, assignment, onUpdate }) => {
           transform: 'translate(-50%, -50%)',
           width: 400,
           bgcolor: 'background.paper',
+          border: '2px solid #000',
+          boxShadow: 24,
           p: 4,
           borderRadius: 2,
-          boxShadow: 3,
         }}
       >
-        <Typography variant="h6" gutterBottom>
+        <Typography variant="h6" component="h2" sx={{ mb: 2 }}>
           Update Assignment
         </Typography>
-        <TextField
-          label="Name"
-          fullWidth
-          value={updatedAssignment.name || ''}
-          onChange={(e) => setUpdatedAssignment({ ...updatedAssignment, name: e.target.value })}
-          sx={{ mb: 2 }}
-        />
-        <TextField
-          label="Bracelet ID"
-          fullWidth
-          value={updatedAssignment.braceletId || ''}
-          onChange={(e) => setUpdatedAssignment({ ...updatedAssignment, braceletId: e.target.value })}
-          sx={{ mb: 2 }}
-        />
-        <TextField
-          label="Color"
-          fullWidth
-          value={updatedAssignment.color || ''}
-          onChange={(e) => setUpdatedAssignment({ ...updatedAssignment, color: e.target.value })}
-          sx={{ mb: 2 }}
-        />
-        <FormControl fullWidth sx={{ mb: 2 }}>
-          <InputLabel>Role</InputLabel>
-          <Select
-            value={updatedAssignment.role || ''}
-            onChange={(e) => setUpdatedAssignment({ ...updatedAssignment, role: e.target.value })}
-          >
-            {roles.map(role => (
-              <MenuItem key={role.id} value={role.id}>
-                {role.roleName}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl fullWidth sx={{ mb: 2 }}>
-          <InputLabel>Access</InputLabel>
-          <Select
-            value={updatedAssignment.access || ''}
-            onChange={(e) => setUpdatedAssignment({ ...updatedAssignment, access: e.target.value })}
-          >
-            {accesses.map(access => (
-              <MenuItem key={access.id} value={access.id}>
-                {access.GameName}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <Autocomplete
-          value={updatedAssignment.timezone || null}
-          onChange={(event, newValue) => {
-            setUpdatedAssignment({ ...updatedAssignment, timezone: newValue });
-          }}
-          options={timezones}
-          getOptionLabel={(option) => `Timezone ID: ${option.TimezoneId} - ${new Date(option.startTime).toLocaleString()} to ${new Date(option.endTime).toLocaleString()}`}
-          renderInput={(params) => <TextField {...params} label="Timezone" variant="outlined" fullWidth />}
-        />
-        <Button variant="contained" color="primary" onClick={handleUpdate} sx={{ mt: 2 }}>
-          Update Assignment
-        </Button>
+        <Stack spacing={2}>
+          <FormControl fullWidth>
+            <InputLabel>Role</InputLabel>
+            <Select value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)}>
+              {roles.map((role) => (
+                <MenuItem key={role.id} value={role.id}>
+                  {role.roleName}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth>
+            <InputLabel>Access</InputLabel>
+            <Select
+              multiple
+              value={selectedAccess}
+              onChange={(e) => setSelectedAccess(e.target.value)}
+            >
+              {accesses.map((access) => (
+                <MenuItem key={access.id} value={access.id}>
+                  {access.GameName}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth>
+            <InputLabel>Timezone</InputLabel>
+            <Select
+              multiple
+              value={selectedTimezone}
+              onChange={(e) => setSelectedTimezone(e.target.value)}
+            >
+              {timezones.map((timezone) => (
+                <MenuItem key={timezone.TimezoneId} value={timezone.TimezoneId}>
+                  {`${new Date(timezone.startTime).toLocaleString()} - ${new Date(timezone.endTime).toLocaleString()}`}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Stack>
+        <Stack direction="row" justifyContent="space-between" sx={{ mt: 3 }}>
+          <Button variant="contained" color="primary" onClick={handleUpdateAssignment} disabled={loading}>
+            {loading ? <CircularProgress size={24} /> : 'Update'}
+          </Button>
+          <Button variant="outlined" color="secondary" onClick={onClose}>
+            Cancel
+          </Button>
+        </Stack>
       </Box>
     </Modal>
   );

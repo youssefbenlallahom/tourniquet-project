@@ -16,7 +16,7 @@ const Role = () => {
   const [accesses, setAccesses] = useState([]);
   const [timezones, setTimezones] = useState([]);
 
-  // Fetch roles
+  // Define fetchRoles here
   const fetchRoles = async () => {
     try {
       const response = await axiosInstance.get('/role/all/');
@@ -26,7 +26,10 @@ const Role = () => {
     }
   };
 
-  // Fetch accesses and timezones
+  useEffect(() => {
+    fetchRoles();
+  }, []);
+
   const fetchAccessesAndTimezones = async () => {
     try {
       const [accessResponse, timezoneResponse] = await Promise.all([
@@ -40,11 +43,6 @@ const Role = () => {
     }
   };
 
-  useEffect(() => {
-    fetchRoles();
-  }, []);
-
-  // Handle delete role
   const handleDelete = async (roleId) => {
     try {
       await axiosInstance.delete(`/role/delete/${roleId}/`);
@@ -54,7 +52,6 @@ const Role = () => {
     }
   };
 
-  // Handle edit role
   const handleEdit = (role) => {
     setEditRole({
       ...role,
@@ -65,19 +62,17 @@ const Role = () => {
     setOpen(true);
   };
 
-  // Handle modal close
   const handleClose = () => {
     setOpen(false);
     setEditRole(null);
   };
 
-  // Handle role update
   const handleUpdateRole = async () => {
     try {
       const updatedRole = {
         ...editRole,
-        access: editRole.access,
-        timezone: editRole.timezone,
+        access: editRole.access.map((access) => access.id || access),
+        timezone: editRole.timezone.map((timezone) => timezone.TimezoneId || timezone),
       };
 
       console.log('Sending updated role:', updatedRole);
@@ -89,11 +84,10 @@ const Role = () => {
         handleClose();
       }
     } catch (error) {
-      console.error('Error updating role:', error.response?.data || error.message);
+      console.error('Error updating role:', error.response.data || error.message);
     }
   };
 
-  // Handle input change
   const handleChange = (e) => {
     const { name, value } = e.target;
     setEditRole({ ...editRole, [name]: value });
@@ -106,10 +100,7 @@ const Role = () => {
           Roles Management
         </Typography>
         <Box sx={{ display: 'flex', justifyContent: 'left', mb: 4 }}>
-          <Button variant="contained" color="primary" onClick={() => {
-            fetchAccessesAndTimezones(); // Fetch data before opening the modal
-            setOpen(true);
-          }}>
+          <Button variant="contained" color="primary" onClick={() => setOpen(true)}>
             Add Role
           </Button>
         </Box>
@@ -215,7 +206,7 @@ const Role = () => {
                         {selected.map((value) => (
                           <Chip
                             key={value}
-                            label={accesses.find((a) => a.id === value)?.GameName || 'Unknown'}
+                            label={accesses.find((a) => a.id === value)?.GameName}
                           />
                         ))}
                       </Box>
@@ -247,14 +238,13 @@ const Role = () => {
                         ? `${new Date(tz.startTime).toLocaleString()} - ${new Date(
                             tz.endTime
                           ).toLocaleString()}`
-                        : 'Unknown';
+                        : '';
                     }}
                   >
-                    {timezones.map((tz) => (
-                      <MenuItem key={tz.TimezoneId} value={tz.TimezoneId}>
-                        {`${new Date(tz.startTime).toLocaleString()} - ${new Date(
-                          tz.endTime
-                        ).toLocaleString()}`}
+                    {timezones.map((timezone) => (
+                      <MenuItem key={timezone.TimezoneId} value={timezone.TimezoneId}>
+                        {new Date(timezone.startTime).toLocaleString()} -{' '}
+                        {new Date(timezone.endTime).toLocaleString()}
                       </MenuItem>
                     ))}
                   </Select>
@@ -267,13 +257,20 @@ const Role = () => {
                     onChange={handleChange}
                   >
                     <MenuItem value="E">E</MenuItem>
+                    <MenuItem value="T">T</MenuItem>
                     <MenuItem value="S">S</MenuItem>
-                    <MenuItem value="E/S">E/S</MenuItem>
                   </Select>
                 </FormControl>
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                  <Button variant="contained" color="primary" onClick={handleUpdateRole}>
-                    {editRole ? 'Update Role' : 'Add Role'}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleUpdateRole}
+                  >
+                    Save
+                  </Button>
+                  <Button variant="outlined" color="secondary" onClick={handleClose}>
+                    Cancel
                   </Button>
                 </Box>
               </CardContent>

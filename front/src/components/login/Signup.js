@@ -4,35 +4,36 @@ import { MDBContainer, MDBRow, MDBCol, MDBCard, MDBCardBody, MDBInput, MDBBtn } 
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const Login = ({ onLogin }) => {
+const Signup = () => {
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
-  const navigate = useNavigate(); // Updated to useNavigate
+  const handleSignup = async () => {
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
 
-  const handleLogin = async () => {
     try {
-      const response = await axios.post('http://127.0.0.1:8000/user/login/', {
-        username: email,
+      const response = await axios.post('http://127.0.0.1:8000/user/register/', {
+        username: username,
+        email: email,
         password: password,
       });
 
-      if (response.status === 200) {
-        const { token } = response.data;
-        localStorage.setItem('isAuthenticated', JSON.stringify(true));
-        localStorage.setItem('token', token.access);
-        onLogin(true);
+      if (response.status === 201) {
+        navigate('/login');
       } else {
-        setError('Invalid credentials');
+        setError('Signup failed. Please try again.');
       }
     } catch (error) {
+      console.error('There was an error signing up!', error.response.data);
       setError('An error occurred. Please try again later.');
     }
-  };
-
-  const handleSignupRedirect = () => {
-    navigate('/signup'); // Updated to use navigate
   };
 
   return (
@@ -45,20 +46,21 @@ const Login = ({ onLogin }) => {
                 <MDBCardBody className="p-md-5 mx-md-4">
                   <div className="text-center">
                     <img src="/assets/logo.png" style={{ width: '185px' }} alt="logo" />
-                    <h4 className="mt-1 mb-5 pb-1">We are JUMPARK Team</h4>
+                    <h4 className="mt-1 mb-5 pb-1">Join JUMPARK Team</h4>
                   </div>
                   <form>
-                    <p>Please login to your account</p>
+                    <p>Create your account</p>
                     {error && <div className="error">{error}</div>}
-                    <MDBInput wrapperClass="mb-4" label="Username" id="form2Example11" type="text" value={email} onChange={(e) => setEmail(e.target.value)} />
+                    <MDBInput wrapperClass="mb-4" label="Username" id="form2Example11" type="text" value={username} onChange={(e) => setUsername(e.target.value)} />
+                    <MDBInput wrapperClass="mb-4" label="Email" id="form2Example12" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
                     <MDBInput wrapperClass="mb-4" label="Password" id="form2Example22" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                    <MDBInput wrapperClass="mb-4" label="Confirm Password" id="form2Example33" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
                     <div className="text-center pt-1 mb-5 pb-1">
-                      <MDBBtn className="btn btn-primary btn-block fa-lg gradient-custom-2 mb-3" type="button" onClick={handleLogin}>Log in</MDBBtn>
-                      <a className="text-muted" href="#!">Forgot password?</a>
+                      <MDBBtn className="btn btn-primary btn-block fa-lg gradient-custom-2 mb-3" type="button" onClick={handleSignup}>Sign up</MDBBtn>
                     </div>
                     <div className="d-flex align-items-center justify-content-center pb-4">
-                      <p className="mb-0 me-2">Don't have an account?</p>
-                      <MDBBtn outline className="mx-2" color="danger" onClick={handleSignupRedirect}>Create new</MDBBtn>
+                      <p className="mb-0 me-2">Already have an account?</p>
+                      <MDBBtn outline className="mx-2" color="danger" onClick={() => navigate('/login')}>Login</MDBBtn>
                     </div>
                   </form>
                 </MDBCardBody>
@@ -77,4 +79,4 @@ const Login = ({ onLogin }) => {
   );
 };
 
-export default Login;
+export default Signup;

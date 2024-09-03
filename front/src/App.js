@@ -10,6 +10,7 @@ import AddRole from './components/dashboard/role/AddRole';
 import Role from './components/dashboard/role/Role';
 import Assignment from './components/dashboard/assignment/Assignment';
 import AddAssignment from './components/dashboard/assignment/AddAssignment';
+import Signup from './components/login/Signup';
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(
     () => JSON.parse(localStorage.getItem('isAuthenticated')) || false
@@ -36,6 +37,9 @@ const App = () => {
           path="/login"
           element={isAuthenticated ? <Navigate to="/dashboard/access" /> : <Login onLogin={handleLogin} />}
         />
+
+<Route path="/signup" element={<Signup />} /> {/* Corrected route */}
+    
         <Route
           path="/dashboard/*"
           element={isAuthenticated ? <Dashboard onLogout={handleLogout} /> : <Navigate to="/login" />}

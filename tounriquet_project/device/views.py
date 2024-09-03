@@ -10,7 +10,8 @@ from rest_framework.permissions import IsAuthenticated
 
 @api_view(['GET'])
 def view_device(request):
-    if not request.user.is_staff and not request.user.is_superuser:
+    print(request)
+    if not request.user.is_staff and not request.user.is_superuser and not request.user.can_manage_device:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
     if request.query_params:
         items = Device.objects.filter(**request.query_params.dict())
@@ -28,7 +29,7 @@ def view_device(request):
 @permission_classes([IsAuthenticated])
 def add_device(request):
     serializer = DeviceSerializer(data=request.data)
-    if not request.user.is_staff and not request.user.is_superuser:
+    if not request.user.is_staff and not request.user.is_superuser and not request.user.can_manage_device:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
     if serializer.is_valid():
         if Device.objects.filter(**request.data).exists():
@@ -41,7 +42,7 @@ def add_device(request):
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_device(request, DeviceId):
-    if not request.user.is_staff and not request.user.is_superuser:
+    if not request.user.is_staff and not request.user.is_superuser and not request.user.can_manage_device:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
     try:
         device = Device.objects.get(id=DeviceId)
@@ -56,7 +57,7 @@ def delete_device(request, DeviceId):
 @permission_classes([IsAuthenticated])
 def update_device(request, DeviceId):
     print(request.data)
-    if not request.user.is_staff and not request.user.is_superuser:
+    if not request.user.is_staff and not request.user.is_superuser and not request.user.can_manage_device:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
     try:
         device_instance = Device.objects.get(DeviceId=DeviceId)
