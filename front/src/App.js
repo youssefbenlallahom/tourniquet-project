@@ -11,6 +11,10 @@ import Role from './components/dashboard/role/Role';
 import Assignment from './components/dashboard/assignment/Assignment';
 import AddAssignment from './components/dashboard/assignment/AddAssignment';
 import Signup from './components/login/Signup';
+import ForgotPassword from './components/login/ForgotPassword';
+import ResetPassword from './components/login/ResetPassword';
+
+
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(
     () => JSON.parse(localStorage.getItem('isAuthenticated')) || false
@@ -38,8 +42,12 @@ const App = () => {
           element={isAuthenticated ? <Navigate to="/dashboard/access" /> : <Login onLogin={handleLogin} />}
         />
 
-<Route path="/signup" element={<Signup />} /> {/* Corrected route */}
-    
+        <Route path="/signup" element={<Signup />} /> {/* Corrected route */}
+        <Route path="/forgot-password" element={<ForgotPassword />} />  {/* Add ForgotPassword route */}
+        <Route path="/reset-password/:token" element={<ResetPassword />} /> {/* Add this route */}
+
+
+
         <Route
           path="/dashboard/*"
           element={isAuthenticated ? <Dashboard onLogout={handleLogout} /> : <Navigate to="/login" />}

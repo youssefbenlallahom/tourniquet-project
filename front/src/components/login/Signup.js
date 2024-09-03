@@ -5,11 +5,12 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 const Signup = () => {
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
-  const navigate = useNavigate(); // Updated to useNavigate
+  const navigate = useNavigate();
 
   const handleSignup = async () => {
     if (password !== confirmPassword) {
@@ -18,18 +19,19 @@ const Signup = () => {
     }
 
     try {
-      const response = await axios.post('http://127.0.0.1:8000/user/signup/', {
-        username: email,
+      const response = await axios.post('http://127.0.0.1:8000/user/register/', {
+        username: username,
+        email: email,
         password: password,
       });
 
       if (response.status === 201) {
-        navigate('/login'); // Updated to use navigate
+        navigate('/login');
       } else {
         setError('Signup failed. Please try again.');
       }
     } catch (error) {
-      console.error('There was an error signing up!', error);
+      console.error('There was an error signing up!', error.response.data);
       setError('An error occurred. Please try again later.');
     }
   };
@@ -49,7 +51,8 @@ const Signup = () => {
                   <form>
                     <p>Create your account</p>
                     {error && <div className="error">{error}</div>}
-                    <MDBInput wrapperClass="mb-4" label="Email" id="form2Example11" type="text" value={email} onChange={(e) => setEmail(e.target.value)} />
+                    <MDBInput wrapperClass="mb-4" label="Username" id="form2Example11" type="text" value={username} onChange={(e) => setUsername(e.target.value)} />
+                    <MDBInput wrapperClass="mb-4" label="Email" id="form2Example12" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
                     <MDBInput wrapperClass="mb-4" label="Password" id="form2Example22" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
                     <MDBInput wrapperClass="mb-4" label="Confirm Password" id="form2Example33" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
                     <div className="text-center pt-1 mb-5 pb-1">
@@ -57,7 +60,7 @@ const Signup = () => {
                     </div>
                     <div className="d-flex align-items-center justify-content-center pb-4">
                       <p className="mb-0 me-2">Already have an account?</p>
-                      <MDBBtn outline className="mx-2" color="danger" onClick={() => navigate('/login')}>Login</MDBBtn> {/* Updated to use navigate */}
+                      <MDBBtn outline className="mx-2" color="danger" onClick={() => navigate('/login')}>Login</MDBBtn>
                     </div>
                   </form>
                 </MDBCardBody>
