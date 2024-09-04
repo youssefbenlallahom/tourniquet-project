@@ -6,7 +6,7 @@ import Config from './config/Config';
 import Settings from './Settings';
 import Header from './Header';
 import Sidebar from './Sidebar';
-import Calendar from './Calendar';
+import Calendar from './timezone/Calendar';
 import Access from './access/Access';
 import AddAccess from './access/AddAccess'; // Import AddAccess
 import Role from './role/Role';

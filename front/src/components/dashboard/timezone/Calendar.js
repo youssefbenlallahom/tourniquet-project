@@ -5,10 +5,10 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { isValid, isBefore } from 'date-fns';
 import { Calendar as BigCalendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
-import axiosInstance from '../../axiosInstance';
+import axiosInstance from '../../../axiosInstance';
 import TimeZoneView from './TimeZoneView';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import Layout from '../../Layout';
+import Layout from '../../../Layout';
 import './calendar.css';
 
 const localizer = momentLocalizer(moment);
