@@ -11,10 +11,10 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'password', 'is_active', 'is_staff', 
+        fields = ['id', 'username', 'email', 'password', 'is_active', 'is_staff', 
                   'can_manage_device', 'can_manage_access', 'can_manage_role', 
                   'can_manage_timezone', 'can_manage_assignment', 'can_manage_bracelet', 
-                  'can_manage_settings')  # Add additional fields
+                  'can_manage_settings']  # Add additional fields
 
     def create(self, validated_data):
         password = validated_data.pop('password', None)

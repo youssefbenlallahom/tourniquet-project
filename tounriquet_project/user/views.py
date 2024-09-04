@@ -20,9 +20,9 @@ class IsSuperUser(BasePermission):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsSuperUser])
 def list_users(request):
-    """List all users except the requesting superuser."""
-    users = User.objects.exclude(id=request.user.id)
-    user_list = users.values('id', 'username', 'email', 'is_active', 'is_staff')
+    """List all users except superusers."""
+    users = User.objects.filter(is_superuser=False)  # Exclude superusers
+    user_list = UserSerializer(users, many=True).data  # Use the serializer to format the data
     return Response({'users': user_list})
 
 @api_view(['DELETE'])

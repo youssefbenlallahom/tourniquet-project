@@ -6,11 +6,13 @@ from rest_framework import serializers
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 
+def user_has_permission(user):
+    return user.is_superuser or user.is_staff or user.can_manage_timezone
 
 
 @api_view(['GET'])
 def view_timezones(request):
-    if not request.user.is_staff and not request.user.is_superuser:
+    if not user_has_permission(request.user):
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
     if request.query_params:
         items = Timezone.objects.filter(**request.query_params.dict())
@@ -30,7 +32,7 @@ def add_timezones(request):
     print(request.data)
     
     # Check for permission
-    if not request.user.is_staff and not request.user.is_superuser:
+    if not user_has_permission(request.user):
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
     
     # Use the UpdateTimezoneSerializer to validate and save the data
@@ -45,7 +47,7 @@ def add_timezones(request):
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_timezones(request, TimezoneId):
-    if not request.user.is_staff and not request.user.is_superuser:
+    if not user_has_permission(request.user):
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
     try:
         timezone = Timezone.objects.get(TimezoneId=TimezoneId)
@@ -60,7 +62,7 @@ def delete_timezones(request, TimezoneId):
 @permission_classes([IsAuthenticated])
 def update_timezones(request, TimezoneId):
     print(request.data)
-    if not request.user.is_staff and not request.user.is_superuser:
+    if not user_has_permission(request.user):
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
     
     try:

@@ -6,10 +6,13 @@ from rest_framework import serializers
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 
+
+def user_has_permission(user):
+    return user.is_superuser or user.is_staff or user.can_manage_assignment
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def view_assignment(request):
-    if not request.user.is_staff and not request.user.is_superuser:
+    if not user_has_permission(request.user):
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
     
     # Fetch the assignments, including related data if needed
@@ -24,7 +27,9 @@ def view_assignment(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_assignment(request):
-    # Use the serializer to validate and save the data
+    if not user_has_permission(request.user):
+        return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
+    
     serializer = UpdateAssignmentSerializer(data=request.data)
     
     if serializer.is_valid():
@@ -39,7 +44,7 @@ def add_assignment(request):
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_assignment(request, AssignmentId):
-    if not request.user.is_staff and not request.user.is_superuser:
+    if not user_has_permission(request.user):
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
     try:
         assignment = Assignment.objects.get(id=AssignmentId)
@@ -52,7 +57,7 @@ def delete_assignment(request, AssignmentId):
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_assignment(request, id):
-    if not request.user.is_staff and not request.user.is_superuser:
+    if not user_has_permission(request.user):
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
     try:
         assignment_instance = Assignment.objects.get(id=id)
@@ -80,7 +85,7 @@ def update_assignment(request, id):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def view_assignment_access(request):
-    if not request.user.is_staff and not request.user.is_superuser:
+    if not user_has_permission(request.user):
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
 
     if request.query_params:
@@ -98,7 +103,7 @@ def view_assignment_access(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_assignment_access(request):
-    if not request.user.is_staff and not request.user.is_superuser:
+    if not user_has_permission(request.user):
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
 
     serializer = Assignment_AccessSerializer(data=request.data)
@@ -111,7 +116,7 @@ def add_assignment_access(request):
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_assignment_access(request, Assignment_accessId):
-    if not request.user.is_staff and not request.user.is_superuser:
+    if not user_has_permission(request.user):
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
     try:
         assignment = Assignment_Access.objects.get(id=Assignment_accessId)
@@ -125,7 +130,7 @@ def delete_assignment_access(request, Assignment_accessId):
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_assignment_access(request, AssignmentId):
-    if not request.user.is_staff and not request.user.is_superuser:
+    if not user_has_permission(request.user):
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
     try:
         Assignment = Assignment.objects.get(AssignmentId=AssignmentId,user=request.user)

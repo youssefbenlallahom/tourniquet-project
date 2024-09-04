@@ -8,11 +8,13 @@ from rest_framework.permissions import IsAuthenticated
 from access.serializers import AccessSerializer
 
 
+def user_has_permission(user):
+    return user.is_superuser or user.is_staff or user.can_manage_access
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def view_access(request):
-    if not request.user.is_staff and not request.user.is_superuser:
+    if not user_has_permission(request.user):
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
     if request.query_params:
         items = Access.objects.filter(**request.query_params.dict())
@@ -30,12 +32,12 @@ def view_access(request):
 @permission_classes([IsAuthenticated])
 def add_access(request):
     print(request.data)
+    if not user_has_permission(request.user):
+        return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
     serializer = AccessSerializer(data=request.data)
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    if not request.user.is_staff and not request.user.is_superuser:
-        return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
 
     access_id = request.data.get('id')
     door_ids = request.data.get('doors', [])
@@ -66,7 +68,7 @@ def add_access(request):
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_access(request, id):
-    if not request.user.is_staff and not request.user.is_superuser:
+    if not user_has_permission(request.user):
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
     try:
         access = Access.objects.get(id=id)
@@ -80,7 +82,7 @@ def delete_access(request, id):
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_access(request, id):
-    if not request.user.is_staff and not request.user.is_superuser:
+    if not user_has_permission(request.user):
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
     try:
         access_instance = Access.objects.get(id=id)

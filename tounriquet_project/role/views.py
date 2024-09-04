@@ -1,16 +1,14 @@
-from rest_framework.decorators import api_view,permission_classes
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from .models import Role ,Timezone ,Access
-from .serializers import RoleSerializer,UpdateRoleSerializer
-from rest_framework import serializers
+from .models import Role, Timezone, Access
+from .serializers import RoleSerializer, UpdateRoleSerializer
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def view_role(request):
-    if not request.user.is_staff and not request.user.is_superuser:
+    if not request.user.is_staff and not request.user.is_superuser and not request.user.can_manage_role:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
     
     if request.query_params:
@@ -23,16 +21,16 @@ def view_role(request):
         return Response(serializer.data)
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_role(request):
-    print(request.data)
+    if not request.user.is_staff and not request.user.is_superuser and not request.user.can_manage_role:
+        return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
+
     serializer = RoleSerializer(data=request.data)
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    if not request.user.is_staff and not request.user.is_superuser:
-        return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
 
     # Extract fields from the request
     role_id = request.data.get('id')
@@ -83,8 +81,9 @@ def add_role(request):
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_role(request, RoleId):
-    if not request.user.is_staff and not request.user.is_superuser:
+    if not request.user.is_staff and not request.user.is_superuser and not request.user.can_manage_role:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
+    
     try:
         role = Role.objects.get(id=RoleId)
     except Role.DoesNotExist:
@@ -93,12 +92,10 @@ def delete_role(request, RoleId):
     role.delete()
     return Response({'message': 'Role deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
 
-
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_role(request, id):
-    print(request.data)
-    if not request.user.is_staff and not request.user.is_superuser:
+    if not request.user.is_staff and not request.user.is_superuser and not request.user.can_manage_role:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
     
     try:

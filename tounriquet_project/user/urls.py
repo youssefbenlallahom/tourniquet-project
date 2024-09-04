@@ -3,7 +3,7 @@ from .views import login, logout, register, get_user, reset_password, request_pa
 
 urlpatterns = [
     path('user/', get_user, name='get_user'),
-    path('update-permissions/', update_user_permissions, name='update-permissions'),
+    path('permissions/update/', update_user_permissions, name='permissions-update'),
     path('all/', list_users, name='list_users'),
     path('delete/<int:user_id>/', delete_user, name='delete_user'),
     path('register/', register, name='register'),
