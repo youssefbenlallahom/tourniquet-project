@@ -5,7 +5,7 @@ import Dashboard from './components/dashboard/dashboard';
 import Access from './components/dashboard/access/Access';
 import AddAccess from './components/dashboard/access/AddAccess';
 import '../src/components/login/Login.css';
-import '../src/components/dashboard/calendar.css';
+import '../src/components/dashboard/timezone/calendar.css';
 import AddRole from './components/dashboard/role/AddRole';
 import Role from './components/dashboard/role/Role';
 import Assignment from './components/dashboard/assignment/Assignment';

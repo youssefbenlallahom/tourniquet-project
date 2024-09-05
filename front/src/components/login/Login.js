@@ -37,7 +37,7 @@ const Login = ({ onLogin }) => {
 
   return (
     <MDBContainer className="my-5 gradient-form" style={{ backgroundColor: '#eee' }}>
-      <MDBRow className="d-flex justify-content-center align-items-center h-100">
+      <MDBRow className="d-flex justify-content-center align-items-center h-100" >
         <MDBCol col="12">
           <MDBCard className="rounded-3 text-black">
             <MDBRow className="g-0">

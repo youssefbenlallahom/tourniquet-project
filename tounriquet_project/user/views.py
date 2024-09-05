@@ -181,7 +181,22 @@ def reset_password(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsSuperUser])
+@permission_classes([IsAuthenticated])
 def get_user(request):
     user = request.user
-    return Response({'userId': user.id, 'username': user.username, 'role': user.role})
+    user_profile = {
+        'userId': user.id,
+        'username': user.username,
+        'email': user.email,
+        'is_active': user.is_active,
+        'is_staff': user.is_staff,
+        'is_superuser': user.is_superuser,
+        'can_manage_device': user.can_manage_device,
+        'can_manage_access': user.can_manage_access,
+        'can_manage_role': user.can_manage_role,
+        'can_manage_timezone': user.can_manage_timezone,
+        'can_manage_assignment': user.can_manage_assignment,
+        'can_manage_bracelet': user.can_manage_bracelet,
+        'can_manage_settings': user.can_manage_settings,
+    }
+    return Response(user_profile)

@@ -17,7 +17,6 @@ import {
 } from 'mdb-react-ui-kit';
 import axiosInstance from '../../axiosInstance';
 
-// Importez les icônes de Material-UI que vous allez utiliser
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CheckIcon from '@mui/icons-material/Check';
@@ -103,14 +102,15 @@ const Settings = () => {
   };
 
   const actionBtnStyle = {
-    margin: '0 5px',
+    margin: '0 8px',
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    minWidth: '36px',
-    minHeight: '36px',
-    borderRadius: '50%',
+    padding: '8px',
+    borderRadius: '20px',
     border: 'none',
+    transition: 'background-color 0.3s, transform 0.3s',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
   };
 
   const updateBtnStyle = {
@@ -127,7 +127,7 @@ const Settings = () => {
     <Layout>
       <MDBContainer className="my-5">
         <MDBRow className="d-flex justify-content-center">
-          <MDBCol md="10">
+          <MDBCol md="12"> {/* Augmentez la largeur ici */}
             <MDBCard>
               <MDBCardBody>
                 <h4 className="mb-4">User Management</h4>
@@ -246,6 +246,7 @@ const Settings = () => {
                                   size="sm"
                                   onClick={() => handleUpdateUser(user.id)}
                                   style={updateBtnStyle}
+                                  className="hover-effect"
                                 >
                                   <EditIcon style={{ color: '#fff' }} />
                                 </MDBBtn>
@@ -256,6 +257,7 @@ const Settings = () => {
                                   size="sm"
                                   onClick={() => handleDeleteUser(user.id)}
                                   style={deleteBtnStyle}
+                                  className="hover-effect"
                                 >
                                   <DeleteIcon style={{ color: '#fff' }} />
                                 </MDBBtn>
