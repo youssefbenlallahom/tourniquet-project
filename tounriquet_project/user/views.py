@@ -198,5 +198,6 @@ def get_user(request):
         'can_manage_assignment': user.can_manage_assignment,
         'can_manage_bracelet': user.can_manage_bracelet,
         'can_manage_settings': user.can_manage_settings,
+        'can_manage_door': user.can_manage_door,
     }
     return Response(user_profile)

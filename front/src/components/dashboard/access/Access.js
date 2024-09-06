@@ -25,7 +25,7 @@ const Access = () => {
         fetchDoors(response.data.flatMap(access => access.doors));
       } catch (error) {
         console.error('Error fetching accesses:', error);
-        alert('Failed to fetch accesses. Please check the console for details.');
+        
       }
     };
 

@@ -13,15 +13,32 @@ import AddAssignment from './components/dashboard/assignment/AddAssignment';
 import Signup from './components/login/Signup';
 import ForgotPassword from './components/login/ForgotPassword';
 import ResetPassword from './components/login/ResetPassword';
-
-
+import NoAccess from './components/dashboard/NoAccess'; // Import du composant NoAccess
+import axiosInstance from './axiosInstance';
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(
     () => JSON.parse(localStorage.getItem('isAuthenticated')) || false
   );
+  const [permissions, setPermissions] = useState({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    localStorage.setItem('isAuthenticated', JSON.stringify(isAuthenticated));
+    const fetchPermissions = async () => {
+      try {
+        const response = await axiosInstance.get('user/profile/');
+        setPermissions(response.data);
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (isAuthenticated) {
+      fetchPermissions();
+    } else {
+      setLoading(false);
+    }
   }, [isAuthenticated]);
 
   const handleLogin = (status) => {
@@ -34,34 +51,65 @@ const App = () => {
     localStorage.setItem('isAuthenticated', JSON.stringify(false));
   };
 
+  const hasPermission = (permission) => {
+    return permissions[permission] === true;
+  };
+
+  if (loading) return <div>Loading...</div>;
+
   return (
     <Router>
       <Routes>
         <Route
           path="/login"
-          element={isAuthenticated ? <Navigate to="/dashboard/access" /> : <Login onLogin={handleLogin} />}
+          element={isAuthenticated ? <Navigate to="/dashboard/home" /> : <Login onLogin={handleLogin} />}
         />
-
-        <Route path="/signup" element={<Signup />} /> {/* Corrected route */}
-        <Route path="/forgot-password" element={<ForgotPassword />} />  {/* Add ForgotPassword route */}
-        <Route path="/reset-password/:token" element={<ResetPassword />} /> {/* Add this route */}
-
-
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
 
         <Route
           path="/dashboard/*"
-          element={isAuthenticated ? <Dashboard onLogout={handleLogout} /> : <Navigate to="/login" />}
+          element={isAuthenticated ? (
+            <Dashboard onLogout={handleLogout} />
+          ) : (
+            <Navigate to="/login" />
+          )}
         >
-          <Route path="access" element={<Access />} />
-          <Route path="access/new" element={<AddAccess />} />
-          <Route path="roles" element={<Role />} />
-          <Route path="roles/new" element={<AddRole />} />
-          <Route path="assignment" element={<Assignment />} />
-          <Route path="assignment/new" element={<AddAssignment />} />
-          
-          {/* Other dashboard routes */}
+          <Route
+            path="home"
+            element={hasPermission('can_access_home') ? <Access /> : <NoAccess />}
+          />
+          <Route
+            path="access"
+            element={hasPermission('can_manage_access') ? <Access /> : <NoAccess />}
+          />
+          <Route
+            path="access/new"
+            element={hasPermission('can_manage_access') ? <AddAccess /> : <NoAccess />}
+          />
+          <Route
+            path="roles"
+            element={hasPermission('can_manage_role') ? <Role /> : <NoAccess />}
+          />
+          <Route
+            path="roles/new"
+            element={hasPermission('can_manage_role') ? <AddRole /> : <NoAccess />}
+          />
+          <Route
+            path="assignment"
+            element={hasPermission('can_manage_assignment') ? <Assignment /> : <NoAccess />}
+          />
+          <Route
+            path="assignment/new"
+            element={hasPermission('can_manage_assignment') ? <AddAssignment /> : <NoAccess />}
+          />
         </Route>
-        <Route path="/" element={<Navigate to="/login" />} />
+
+        <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard/home" /> : <Navigate to="/login" />} />
+        
+        {/* Route pour les pages non trouvées ou accès refusé */}
+        <Route path="*" element={<NoAccess />} />
       </Routes>
     </Router>
   );

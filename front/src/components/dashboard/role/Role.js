@@ -15,8 +15,13 @@ const Role = () => {
   const [open, setOpen] = useState(false); // To control the modal visibility
   const [accesses, setAccesses] = useState([]);
   const [timezones, setTimezones] = useState([]);
+  const [isEditing, setIsEditing] = useState(false); // To distinguish between add and edit
 
-  // Define fetchRoles here
+  useEffect(() => {
+    fetchRoles();
+    fetchAccessesAndTimezones();
+  }, []);
+
   const fetchRoles = async () => {
     try {
       const response = await axiosInstance.get('/role/all/');
@@ -25,10 +30,6 @@ const Role = () => {
       console.error('Error fetching roles:', error);
     }
   };
-
-  useEffect(() => {
-    fetchRoles();
-  }, []);
 
   const fetchAccessesAndTimezones = async () => {
     try {
@@ -52,14 +53,20 @@ const Role = () => {
     }
   };
 
+  const handleAdd = () => {
+    setEditRole({ roleName: '', access: [], timezone: [], type: '' }); // Clear form data
+    setIsEditing(false); // Set to add mode
+    setOpen(true); // Open modal
+  };
+
   const handleEdit = (role) => {
     setEditRole({
       ...role,
       access: role.access.map((access) => access.id), // Ensure this returns an array of IDs
       timezone: role.timezone.map((tz) => tz.TimezoneId), // Ensure this returns an array containing the timezone ID
     });
-    fetchAccessesAndTimezones(); // Fetch accesses and timezones when editing a role
-    setOpen(true);
+    setIsEditing(true); // Set to edit mode
+    setOpen(true); // Open modal
   };
 
   const handleClose = () => {
@@ -75,8 +82,6 @@ const Role = () => {
         timezone: editRole.timezone.map((timezone) => timezone.TimezoneId || timezone),
       };
 
-      console.log('Sending updated role:', updatedRole);
-
       const response = await axiosInstance.put(`/role/update/${editRole.id}/`, updatedRole);
 
       if (response.status === 200) {
@@ -85,6 +90,26 @@ const Role = () => {
       }
     } catch (error) {
       console.error('Error updating role:', error.response.data || error.message);
+    }
+  };
+
+  const handleAddRole = async () => {
+    try {
+      const newRole = {
+        roleName: editRole?.roleName || '',
+        access: editRole?.access || [],
+        timezone: editRole?.timezone || [],
+        type: editRole?.type || '',
+      };
+
+      const response = await axiosInstance.post('/role/create/', newRole);
+
+      if (response.status === 201) {
+        await fetchRoles(); // Reload roles after creation
+        handleClose();
+      }
+    } catch (error) {
+      console.error('Error adding role:', error.response.data || error.message);
     }
   };
 
@@ -100,7 +125,7 @@ const Role = () => {
           Roles Management
         </Typography>
         <Box sx={{ display: 'flex', justifyContent: 'left', mb: 4 }}>
-          <Button variant="contained" color="primary" onClick={() => setOpen(true)}>
+          <Button variant="contained" color="primary" onClick={handleAdd}>
             Add Role
           </Button>
         </Box>
@@ -164,7 +189,7 @@ const Role = () => {
           </Table>
         </TableContainer>
 
-        {/* Edit Role Modal */}
+        {/* Role Modal */}
         <Modal open={open} onClose={handleClose}>
           <Box
             sx={{
@@ -178,7 +203,7 @@ const Role = () => {
             <Card sx={{ width: 500, padding: 2 }}>
               <CardContent>
                 <Typography variant="h5" gutterBottom>
-                  {editRole ? 'Edit Role' : 'Add Role'}
+                  {isEditing ? 'Edit Role' : 'Add Role'}
                 </Typography>
                 <FormControl fullWidth margin="normal">
                   <TextField
@@ -222,55 +247,49 @@ const Role = () => {
                 <FormControl fullWidth margin="normal">
                   <InputLabel>Timezone</InputLabel>
                   <Select
+                    multiple
                     name="timezone"
                     value={editRole?.timezone || []}
                     onChange={(e) =>
                       setEditRole({
                         ...editRole,
-                        timezone: [e.target.value], // Ensure this returns an array containing the timezone ID
+                        timezone: e.target.value, // Ensure this returns an array of IDs
                       })
                     }
-                    renderValue={(value) => {
-                      const tz = timezones.find(
-                        (t) => t.TimezoneId === value[0]
-                      );
-                      return tz
-                        ? `${new Date(tz.startTime).toLocaleString()} - ${new Date(
-                            tz.endTime
-                          ).toLocaleString()}`
-                        : '';
-                    }}
+                    renderValue={(selected) => (
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {selected.map((value) => (
+                          <Chip
+                            key={value}
+                            label={timezones.find((tz) => tz.TimezoneId === value)?.TimezoneName}
+                          />
+                        ))}
+                      </Box>
+                    )}
                   >
                     {timezones.map((timezone) => (
                       <MenuItem key={timezone.TimezoneId} value={timezone.TimezoneId}>
-                        {new Date(timezone.startTime).toLocaleString()} -{' '}
-                        {new Date(timezone.endTime).toLocaleString()}
+                        {timezone.TimezoneName}
                       </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
                 <FormControl fullWidth margin="normal">
-                  <InputLabel>Type</InputLabel>
-                  <Select
+                  <TextField
+                    label="Type"
                     name="type"
                     value={editRole?.type || ''}
                     onChange={handleChange}
-                  >
-                    <MenuItem value="E">E</MenuItem>
-                    <MenuItem value="T">T</MenuItem>
-                    <MenuItem value="S">S</MenuItem>
-                  </Select>
+                    variant="outlined"
+                  />
                 </FormControl>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
                   <Button
                     variant="contained"
                     color="primary"
-                    onClick={handleUpdateRole}
+                    onClick={isEditing ? handleUpdateRole : handleAddRole}
                   >
-                    Save
-                  </Button>
-                  <Button variant="outlined" color="secondary" onClick={handleClose}>
-                    Cancel
+                    {isEditing ? 'Update Role' : 'Add Role'}
                   </Button>
                 </Box>
               </CardContent>

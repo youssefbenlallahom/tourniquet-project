@@ -48,6 +48,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     can_manage_assignment = models.BooleanField(default=False)
     can_manage_bracelet = models.BooleanField(default=False)
     can_manage_settings = models.BooleanField(default=False)
+    can_manage_door=models.BooleanField(default=False)
     
     objects = CustomUserManager()
     
@@ -68,6 +69,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             self.can_manage_assignment = True
             self.can_manage_bracelet = True
             self.can_manage_settings = True
+            self.can_manage_door=True
         super().save(*args, **kwargs)
 
     def __str__(self):
