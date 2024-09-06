@@ -3,11 +3,13 @@ import 'mdb-react-ui-kit/dist/css/mdb.min.css';
 import { MDBContainer, MDBRow, MDBCol, MDBCard, MDBCardBody, MDBInput, MDBBtn } from 'mdb-react-ui-kit';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { Alert, Collapse } from '@mui/material'; // Import MUI components
 
 const ForgotPassword = () => {
   const [identifier, setIdentifier] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [open, setOpen] = useState(false); // State to manage alert visibility
   const navigate = useNavigate();
 
   const handleRequestReset = async () => {
@@ -18,11 +20,17 @@ const ForgotPassword = () => {
 
       if (response.status === 200) {
         setMessage('A password reset link has been sent to your email.');
+        setError('');
+        setOpen(true);
       } else {
         setError('Unable to process request. Please try again.');
+        setMessage('');
+        setOpen(true);
       }
     } catch (error) {
       setError('An error occurred. Please try again later.');
+      setMessage('');
+      setOpen(true);
     }
   };
 
@@ -40,8 +48,21 @@ const ForgotPassword = () => {
                   </div>
                   <form>
                     <p>Please enter your email or username to request a password reset.</p>
-                    {message && <div className="success">{message}</div>}
-                    {error && <div className="error">{error}</div>}
+                    
+                    {/* MUI Alert for Success or Error */}
+                    <Collapse in={open}>
+                      {message && (
+                        <Alert severity="success" onClose={() => setOpen(false)} sx={{ mb: 2 }}>
+                          {message}
+                        </Alert>
+                      )}
+                      {error && (
+                        <Alert severity="error" onClose={() => setOpen(false)} sx={{ mb: 2 }}>
+                          {error}
+                        </Alert>
+                      )}
+                    </Collapse>
+                    
                     <MDBInput 
                       wrapperClass="mb-4" 
                       label="Email or Username" 

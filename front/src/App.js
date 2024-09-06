@@ -56,6 +56,7 @@ const App = () => {
           <Route path="access/new" element={<AddAccess />} />
           <Route path="roles" element={<Role />} />
           <Route path="roles/new" element={<AddRole />} />
+
           <Route path="assignment" element={<Assignment />} />
           <Route path="assignment/new" element={<AddAssignment />} />
           
