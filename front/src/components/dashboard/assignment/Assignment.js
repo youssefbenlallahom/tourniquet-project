@@ -57,10 +57,18 @@ const Assignment = () => {
   };
 
   const formatDate = (date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      dateStyle: 'short',
-      timeStyle: 'short',
-    }).format(new Date(date));
+    if (!date) return 'Invalid Date';
+    try {
+      const parsedDate = new Date(date);
+      if (isNaN(parsedDate.getTime())) return 'Invalid Date'; // Handle invalid date
+      return new Intl.DateTimeFormat('en-US', {
+        dateStyle: 'short',
+        timeStyle: 'short',
+      }).format(parsedDate);
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Invalid Date';
+    }
   };
 
   return (

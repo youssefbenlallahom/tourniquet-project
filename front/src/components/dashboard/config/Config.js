@@ -19,7 +19,7 @@ const Config = () => {
       try {
         const response = await axiosInstance.get('/device/all/');
         setDevices(response.data.map(device => ({
-          id: device.DeviceId,
+          DeviceId: device.DeviceId,
           ip: device.device_ip,
           port: device.port,
           doors: device.nb_doors,
@@ -34,7 +34,7 @@ const Config = () => {
 
   const handleAddDevice = (device) => {
     setDevices([...devices, {
-      id: device.DeviceId,
+      DeviceId: device.DeviceId,
       ip: device.device_ip,
       port: device.port,
       doors: device.nb_doors,
@@ -56,10 +56,10 @@ const Config = () => {
       };
       
       // Effectuez la requête PUT pour mettre à jour l'appareil
-      const response = await axiosInstance.put(`/device/update/${selectedDevice.id}/`, formattedData);
+      const response = await axiosInstance.put(`/device/update/${selectedDevice.DeviceId}/`, formattedData);
       
       // Mettez à jour la liste des appareils avec les nouvelles données
-      setDevices(devices.map(d => d.id === response.data.DeviceId ? {
+      setDevices(devices.map(d => d.DeviceId === response.data.DeviceId ? {
         ...d,
         ip: response.data.device_ip,
         port: response.data.port,
@@ -76,10 +76,10 @@ const Config = () => {
   
   
 
-  const handleDeleteDevice = async (id) => {
+  const handleDeleteDevice = async (DeviceId) => {
     try {
-      const response = await axiosInstance.delete(`/device/delete/${id}/`);
-      setDevices(devices.filter(device => device.id !== id));
+      const response = await axiosInstance.delete(`/device/delete/${DeviceId}/`);
+      setDevices(devices.filter(device => device.DeviceId !== DeviceId));
     } catch (error) {
       console.error('Error deleting device:', error.response?.data || error.message);
     }
@@ -106,9 +106,9 @@ const Config = () => {
         </Box>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
           {devices.map(device => (
-            <Card key={device.id} sx={{ width: 300 }}>
+            <Card key={device.DeviceId} sx={{ width: 300 }}>
               <CardContent>
-                <Typography variant="h6">{`ID: ${device.id}`}</Typography>
+                <Typography variant="h6">{`DeviceId: ${device.DeviceId}`}</Typography>
                 <Typography variant="body1">{`IP Address: ${device.ip}`}</Typography>
                 <Typography variant="body1">{`Port: ${device.port}`}</Typography>
                 <Typography variant="body1">{`Number of Doors: ${device.doors}`}</Typography>
@@ -128,7 +128,7 @@ const Config = () => {
                   </IconButton>
                 </Tooltip>
                 <Tooltip title="Delete">
-                  <IconButton color="error" onClick={() => handleDeleteDevice(device.id)}>
+                  <IconButton color="error" onClick={() => handleDeleteDevice(device.DeviceId)}>
                     <DeleteIcon />
                   </IconButton>
                 </Tooltip>

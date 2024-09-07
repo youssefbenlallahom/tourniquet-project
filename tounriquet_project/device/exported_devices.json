@@ -1,0 +1,14 @@
+[
+    {
+        "DeviceId": 2,
+        "device_ip": "127.168.1.4",
+        "port": "4070",
+        "nb_doors": 2
+    },
+    {
+        "DeviceId": 3,
+        "device_ip": "197.244.62.149",
+        "port": "4307",
+        "nb_doors": 4
+    }
+]

@@ -239,19 +239,19 @@ const AddAssignment = () => {
         <FormControl size="small" sx={{ flex: 1 }}>
           <InputLabel>Timezone</InputLabel>
           <Select
-            value={selectedTimezone}
-            onChange={(e) => setSelectedTimezone(e.target.value)}
-            variant="outlined"
-            color="primary"
-            size="small"
-            disabled={!selectedAccess}
-          >
-            {filteredTimezones.map((timezone) => (
-              <MenuItem key={timezone.TimezoneId} value={timezone.TimezoneId}>
-                {formatDateTime(timezone.startTime)} - {formatDateTime(timezone.endTime)}
-              </MenuItem>
-            ))}
-          </Select>
+  value={selectedTimezone}
+  onChange={(e) => setSelectedTimezone(e.target.value)}
+  variant="outlined"
+  color="primary"
+  size="small"
+  disabled={!selectedAccess}
+>
+  {filteredTimezones.map((timezone) => (
+    <MenuItem key={timezone.TimezoneId} value={timezone.TimezoneId}>
+      {formatDateTime(timezone.startTime)} - {formatDateTime(timezone.endTime)}
+    </MenuItem>
+  ))}
+</Select>
           <Button
             variant="contained"
             color="primary"

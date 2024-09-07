@@ -12,6 +12,7 @@ def user_has_permission(user):
 
 @api_view(['GET'])
 def view_timezones(request):
+    print(request.data)
     if not user_has_permission(request.user):
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
     if request.query_params:

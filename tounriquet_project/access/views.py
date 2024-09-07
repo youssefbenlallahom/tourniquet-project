@@ -14,6 +14,7 @@ def user_has_permission(user):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def view_access(request):
+    
     if not user_has_permission(request.user):
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
     if request.query_params:
@@ -23,6 +24,7 @@ def view_access(request):
  
     if items.exists():
         serializer = AccessSerializer(items, many=True)
+        print(serializer.data)
         return Response(serializer.data)
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
