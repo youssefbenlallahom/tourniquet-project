@@ -17,6 +17,8 @@ def user_has_permission(user):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def view_assignment(request):
+    export_data_as_json()
+    transform_data()
     if not user_has_permission(request.user):
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
     
@@ -28,7 +30,29 @@ def view_assignment(request):
         return Response(serializer.data)
     else:
         return Response({'error': 'No assignments found.'}, status=status.HTTP_404_NOT_FOUND)
+def generate_all_assignments_json():
+    assignments = Assignment.objects.all().select_related('role').prefetch_related('access_ids__doors__device', 'timezone_ids')
+    
+    result = defaultdict(list)
 
+    for assignment in assignments:
+        assignment_data = generate_assignment_data(assignment.id)
+        
+        # Fusionner les données de chaque assignment dans le résultat final basé sur l'IP, pas l'ID de l'assignment
+        for ip, timezones in assignment_data.items():
+            result[ip].extend(timezones)
+    
+    # Nommer le fichier 'exported_assignment.json'
+    file_path = 'C:\\Users\\youssef\\Desktop\\tourniquet-project\\tounriquet_project\\assignment\\exported_assignment.json'
+    
+    # Sauvegarder toutes les données d'assignments dans un fichier JSON
+    with open(file_path, 'w') as file:
+        json.dump(result, file, indent=4)
+
+    return file_path
+
+
+# Générez les données d'un assignment spécifique
 def generate_assignment_data(assignment_id):
     try:
         # Récupérer l'Assignment avec les relations nécessaires
@@ -62,8 +86,19 @@ def generate_assignment_data(assignment_id):
 
     except Assignment.DoesNotExist:
         return {'error': 'Assignment not found'}
-
-
+    
+    
+def format_time(time_str):
+        try:
+            parts = time_str.split(' ', 1)
+            if len(parts) == 2:
+                date_str = parts[1]
+                dt = parser.parse(date_str)
+                return dt.strftime('%H%M')
+        except (ValueError, TypeError) as e:
+            print(f"Erreur de conversion pour {time_str} - {e}")
+        return "0000"
+# Génère un dictionnaire des heures pour chaque timezone
 def generate_time_dict(timezone):
     # Initialisation de tous les champs à "0000"
     time_data = {
@@ -91,24 +126,11 @@ def generate_time_dict(timezone):
         "SatTime3": "0000"
     }
 
-    # Fonction pour extraire et formater l'heure
-    def format_time(time_str):
-        try:
-            # Extraire la partie date-heure
-            parts = time_str.split(' ', 1)
-            if len(parts) == 2:
-                date_str = parts[1]
-                # Analyse de date_str
-                dt = parser.parse(date_str)
-                # Formatage en 'HHMM'
-                return dt.strftime('%H%M')
-        except (ValueError, TypeError) as e:
-            print(f"Erreur de conversion pour {time_str} - {e}")
-        return "0000"
+    # Fonction pour formater les heures
 
-    # Fonction pour obtenir le label de temps basé sur le jour
+
+    # Fonction pour obtenir le label de temps en fonction du jour de la semaine
     def get_time_label(day_of_week, index):
-        # Map des jours de la semaine aux labels
         labels = {
             'Sun': 'SunTime',
             'Mon': 'MonTime',
@@ -126,27 +148,115 @@ def generate_time_dict(timezone):
     # Remplir les champs en fonction de startTime
     if timezone.startTime:
         start_time_str = timezone.startTime.strftime('%a %m/%d/%Y %H:%M')
-        day_of_week = timezone.startTime.strftime('%a')  # Par exemple, 'Sun', 'Mon'
+        day_of_week = timezone.startTime.strftime('%a')
         
-        # Trouver le label de temps correspondant
-        for index in range(1, 4):  # Pour Time1, Time2, Time3
+        for index in range(1, 3):
             time_label = get_time_label(day_of_week, index)
             if time_label and time_label in time_data:
                 time_data[time_label] = format_time(start_time_str)
-                break  # On remplit seulement un label, on arrête ici
+                break
 
     return time_data
 
+# Sauvegarde les données d'un assignment spécifique dans un fichier JSON
 def save_assignment_data_to_json(assignment_id):
-    # Générez les données d'assignement
     data = generate_assignment_data(assignment_id)
-    
-    # Sauvegardez les données dans un fichier JSON
     with open(f'assignment_{assignment_id}.json', 'w') as file:
         json.dump(data, file, indent=4)
-
     return f'Données sauvegardées dans assignment_{assignment_id}.json'
 
+def export_data_as_json():
+    # Récupérer tous les assignments avec les relations nécessaires
+    assignments = Assignment.objects.select_related('role').prefetch_related('access_ids__doors', 'timezone_ids')
+    
+    # Préparer les données pour l'export
+    data = []
+
+    for assignment in assignments:
+        # Récupérer les détails du role
+        role = assignment.role.name if assignment.role else "No Role"
+
+        for timezone in assignment.timezone_ids.all():
+            start_time = timezone.startTime.strftime('%Y-%m-%dT%H:%M:%SZ') if timezone.startTime else ""
+            end_time = timezone.endTime.strftime('%Y-%m-%dT%H:%M:%SZ') if timezone.endTime else ""
+            
+            for access in assignment.access_ids.all():
+                for door in access.doors.all():
+                    data.append({
+                        "device":door.device.device_ip,
+                        "braceletId": assignment.braceletId,
+                        "startTime": start_time,
+                        "endTime": end_time,
+                        "role": role,
+                        "timezoneId": timezone.TimezoneId,
+                        "doorId": door.id
+                    })
+
+    # Nommer le fichier 'exported_data.json'
+    file_path = 'C:\\Users\\youssef\\Desktop\\tourniquet-project\\tounriquet_project\\assignment\\exported_data.json'
+    
+    # Sauvegarder les données dans un fichier JSON
+    with open(file_path, 'w') as file:
+        json.dump(data, file, indent=4)
+
+    return file_path
+
+def transform_data():
+    input_file_path = 'C:\\Users\\youssef\\Desktop\\tourniquet-project\\tounriquet_project\\assignment\\exported_data.json'
+    output_file_path = 'C:\\Users\\youssef\\Desktop\\tourniquet-project\\tounriquet_project\\assignment\\controller_data.json'
+    with open(input_file_path, 'r') as file:
+        data = json.load(file)
+    
+    # Préparer un dictionnaire pour stocker les résultats
+    result = {}
+    def format_time(time_str):
+        """
+        Formate le temps en format HHMM à partir d'une chaîne de caractères ISO 8601.
+        """
+        try:
+            # Convertir la chaîne ISO 8601 en objet datetime
+            dt = datetime.fromisoformat(time_str.replace("Z", "+00:00"))
+            # Retourner l'heure au format HHMM
+            return dt.strftime('%H%M')
+        except ValueError as e:
+            print(f"Erreur de conversion pour {time_str} - {e}")
+        return "0000"
+    for entry in data:
+        # Extraire les informations nécessaires
+        bracelet_id = entry['braceletId']
+        start_time = format_time(entry['startTime'])
+        end_time = format_time(entry['endTime'])
+        role = entry.get('role', 'user')  # Définir un rôle par défaut si manquant
+        timezone_id = entry['timezoneId']
+        door_id = entry['doorId']
+        ip_address = entry.get('device')  # Remplacer 'unknown_ip' si ip est absent
+
+        # Déterminer si l'utilisateur est un GM
+        super_authorize = 1 if role == 'GM' else 0
+
+        # Formater les champs nécessaires
+        user_entry = f"CardNo={bracelet_id}\tPin=\tPassword=\tGroup=\tStartTime={start_time}\tEndTime={end_time}\tSuperAuthorize={super_authorize};"
+        user_authorize_entry = f"Pin=\tAuthorizeTimezoneId={timezone_id}\tAuthorizeDoorId={door_id};"
+
+        # Ajouter les entrées au dictionnaire de résultats
+        if ip_address not in result:
+            result[ip_address] = {
+                "user": [],
+                "userAuthorize": []
+            }
+
+        result[ip_address]["user"].append(user_entry)
+        result[ip_address]["userAuthorize"].append(user_authorize_entry)
+    
+    # Sauvegarder les résultats dans un fichier JSON
+    with open(output_file_path, 'w') as file:
+        json.dump(result, file, indent=4)
+
+    return output_file_path
+
+
+
+# Vue pour ajouter un assignment
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_assignment(request):
@@ -156,16 +266,13 @@ def add_assignment(request):
     serializer = UpdateAssignmentSerializer(data=request.data)
     
     if serializer.is_valid():
-        # Enregistre l'instance Assignment
         assignment = serializer.save()
 
-        # Après l'ajout de l'assignment, génère et sauvegarde le fichier JSON avec l'ID de l'Assignment
-        file_path = save_assignment_data_to_json(assignment.id)
-
-        # Sérialiser l'objet Assignment créé
+        # Génère et sauvegarde le fichier JSON nommé 'exported_assignment.json'
+        file_path = generate_all_assignments_json()
+        export_data_as_json()
         created_assignment = UpdateAssignmentSerializer(assignment).data
 
-        # Retourne à la fois les données de l'assignment et le chemin du fichier JSON
         return Response({
             'assignment': created_assignment,
             'json_file_path': file_path
@@ -173,20 +280,29 @@ def add_assignment(request):
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-
+# Vue pour supprimer un assignment
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_assignment(request, AssignmentId):
     if not user_has_permission(request.user):
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
+    
     try:
         assignment = Assignment.objects.get(id=AssignmentId)
     except Assignment.DoesNotExist:
         return Response({'error': 'Assignment not found.'}, status=status.HTTP_404_NOT_FOUND)
 
     assignment.delete()
-    return Response({'message': 'Assignment deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
+
+    # Mettre à jour le fichier JSON après suppression
+    file_path = generate_all_assignments_json()
+    export_data_as_json()
+
+    return Response({
+        'message': 'Assignment deleted successfully.',
+        'json_file_path': file_path
+    }, status=status.HTTP_204_NO_CONTENT)
+
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
@@ -202,16 +318,18 @@ def update_assignment(request, id):
     serializer = UpdateAssignmentSerializer(assignment_instance, data=data, partial=True)
     if serializer.is_valid():
         updated_assignment = serializer.save()
-        # Update related access and timezones if provided
-        access_ids = data.get('access_ids', [])
-        timezone_ids = data.get('timezone_ids', [])
-        if access_ids:
-            updated_assignment.access_id.set(access_ids)
-        if timezone_ids:
-            updated_assignment.timezone_id.set(timezone_ids)
-        return Response(serializer.data)
+
+        # Mettre à jour le fichier JSON après la modification de l'Assignment
+        file_path = generate_all_assignments_json()
+        export_data_as_json()
+
+        return Response({
+            'assignment': serializer.data,
+            'json_file_path': file_path
+        })
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 ################### Assignment_access ###################

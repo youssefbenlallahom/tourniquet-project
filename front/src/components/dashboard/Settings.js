@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '../../Layout';
+import { useNavigate } from 'react-router-dom';
 import 'mdb-react-ui-kit/dist/css/mdb.min.css';
 import '@mui/icons-material'; // Importez les icônes de Material-UI
 import {
@@ -25,6 +26,8 @@ const Settings = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
+
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -70,7 +73,7 @@ const Settings = () => {
   };
 
   const handleUpdateUser = (userId) => {
-    console.log('Update user:', userId);
+    navigate(`/dashboard/user/update/${userId}`);
   };
 
   // Styles

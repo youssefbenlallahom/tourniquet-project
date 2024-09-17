@@ -15,6 +15,8 @@ import ForgotPassword from './components/login/ForgotPassword';
 import ResetPassword from './components/login/ResetPassword';
 import NoAccess from './components/dashboard/NoAccess'; // Import du composant NoAccess
 import axiosInstance from './axiosInstance';
+import UpdateUser from './components/dashboard/UpdateProfile';
+
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(
     () => JSON.parse(localStorage.getItem('isAuthenticated')) || false
@@ -110,6 +112,8 @@ const App = () => {
         
         {/* Route pour les pages non trouvées ou accès refusé */}
         <Route path="*" element={<NoAccess />} />
+        <Route path="/dashboard/user/update/:userId" element={<UpdateUser />} />
+
       </Routes>
     </Router>
   );

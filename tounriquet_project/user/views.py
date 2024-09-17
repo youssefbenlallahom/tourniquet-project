@@ -201,3 +201,45 @@ def get_user(request):
         'can_manage_door': user.can_manage_door,
     }
     return Response(user_profile)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated, IsSuperUser])
+def update_user_details(request, user_id):
+    """Update a user's username, password, or email (only for superusers)."""
+    try:
+        # Fetch the user to be updated
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+    
+    # Extract new details from the request
+    new_username = request.data.get('username')
+    new_email = request.data.get('email')
+    new_password = request.data.get('password')
+
+    # Update username if provided
+    if new_username:
+        if User.objects.filter(username=new_username).exists():
+            return Response({'error': 'Username already taken.'}, status=status.HTTP_400_BAD_REQUEST)
+        user.username = new_username
+
+    # Update email if provided
+    if new_email:
+        if User.objects.filter(email=new_email).exists():
+            return Response({'error': 'Email already in use.'}, status=status.HTTP_400_BAD_REQUEST)
+        user.email = new_email
+
+    # Update password if provided
+    if new_password:
+        user.set_password(new_password)
+
+    # Save the updated user details
+    user.save()
+
+    # Return the updated user profile
+    user_serializer = UserSerializer(user)
+    return Response({
+        'message': 'User details updated successfully.',
+        'user': user_serializer.data
+    }, status=status.HTTP_200_OK)
