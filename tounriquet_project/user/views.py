@@ -213,20 +213,20 @@ def update_user_details(request, user_id):
     except User.DoesNotExist:
         return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
     
-    # Extract new details from the request
+    # Extract the data from the request
     new_username = request.data.get('username')
     new_email = request.data.get('email')
     new_password = request.data.get('password')
 
-    # Update username if provided
-    if new_username:
-        if User.objects.filter(username=new_username).exists():
+    # Update username if provided and it's different
+    if new_username and new_username != user.username:
+        if User.objects.filter(username=new_username).exclude(id=user.id).exists():
             return Response({'error': 'Username already taken.'}, status=status.HTTP_400_BAD_REQUEST)
         user.username = new_username
 
-    # Update email if provided
-    if new_email:
-        if User.objects.filter(email=new_email).exists():
+    # Update email if provided and it's different
+    if new_email and new_email != user.email:
+        if User.objects.filter(email=new_email).exclude(id=user.id).exists():
             return Response({'error': 'Email already in use.'}, status=status.HTTP_400_BAD_REQUEST)
         user.email = new_email
 
