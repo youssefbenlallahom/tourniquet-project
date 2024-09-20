@@ -112,8 +112,16 @@ const App = () => {
         
         {/* Route pour les pages non trouvées ou accès refusé */}
         <Route path="*" element={<NoAccess />} />
-        <Route path="/dashboard/user/update/:userId" element={<UpdateUser />} />
-
+        <Route
+          path="/dashboard/user/update/:userId"
+          element={
+            isAuthenticated ? (
+              <UpdateUser />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
       </Routes>
     </Router>
   );
