@@ -60,6 +60,12 @@ const Settings = () => {
     }
   };
 
+
+  const handleDeleteUser = async (userId) => {
+    if (window.confirm('Are you sure you want to delete this user?')) {
+      try {
+        await axiosInstance.delete(`/user/${userId}/delete/`);
+        setUsers(users.filter(user => user.id !== userId));
       } catch (err) {
         console.error('Error deleting user:', err);
         setError('Failed to delete user');
