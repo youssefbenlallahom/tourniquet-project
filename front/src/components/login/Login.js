@@ -45,7 +45,7 @@ const Login = ({ onLogin }) => {
                 <MDBCardBody className="p-md-5 mx-md-4">
                   <div className="text-center">
                     <img src="/assets/logo.png" style={{ width: '185px' }} alt="logo" />
-                    <h4 className="mt-1 mb-5 pb-1">We are JUMPARK Team</h4>
+                    <h4 className="mt-1 mb-5 pb-1">We are GAME PRODUCTION Team</h4>
                   </div>
                   <form>
                     <p>Please login to your account</p>
