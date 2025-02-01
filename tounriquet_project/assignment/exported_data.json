@@ -1,0 +1,56 @@
+[
+    {
+        "device": "127.168.1.4",
+        "braceletId": "BR5161",
+        "startTime": "2024-09-10T13:00:00Z",
+        "endTime": "2024-09-10T14:00:00Z",
+        "role": "No Role",
+        "timezoneId": 25,
+        "doorId": 41
+    },
+    {
+        "device": "127.168.1.4",
+        "braceletId": "BR5161",
+        "startTime": "2024-09-10T13:00:00Z",
+        "endTime": "2024-09-10T14:00:00Z",
+        "role": "No Role",
+        "timezoneId": 25,
+        "doorId": 47
+    },
+    {
+        "device": "197.244.62.149",
+        "braceletId": "BR5161",
+        "startTime": "2024-09-10T13:00:00Z",
+        "endTime": "2024-09-10T14:00:00Z",
+        "role": "No Role",
+        "timezoneId": 25,
+        "doorId": 48
+    },
+    {
+        "device": "127.168.1.4",
+        "braceletId": "BR5161",
+        "startTime": "2024-09-10T14:00:00Z",
+        "endTime": "2024-09-10T15:00:00Z",
+        "role": "No Role",
+        "timezoneId": 26,
+        "doorId": 41
+    },
+    {
+        "device": "127.168.1.4",
+        "braceletId": "BR5161",
+        "startTime": "2024-09-10T14:00:00Z",
+        "endTime": "2024-09-10T15:00:00Z",
+        "role": "No Role",
+        "timezoneId": 26,
+        "doorId": 47
+    },
+    {
+        "device": "197.244.62.149",
+        "braceletId": "BR5161",
+        "startTime": "2024-09-10T14:00:00Z",
+        "endTime": "2024-09-10T15:00:00Z",
+        "role": "No Role",
+        "timezoneId": 26,
+        "doorId": 48
+    }
+]
