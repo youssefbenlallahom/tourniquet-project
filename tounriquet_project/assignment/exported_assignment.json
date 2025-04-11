@@ -1,0 +1,16 @@
+{
+    "127.168.1.4": [
+        {
+            "user_entry": "CardNo=211\tPin=\tPassword=\tGroup=\tStartTime=1300\tEndTime=1400\tSuperAuthorize=0;",
+            "user_authorize_entry": "Pin=\tAuthorizeTimezoneId=56\tAuthorizeDoorId=41;"
+        },
+        {
+            "user_entry": "CardNo=211\tPin=\tPassword=\tGroup=\tStartTime=1300\tEndTime=1400\tSuperAuthorize=0;",
+            "user_authorize_entry": "Pin=\tAuthorizeTimezoneId=56\tAuthorizeDoorId=41;"
+        },
+        {
+            "user_entry": "CardNo=211\tPin=\tPassword=\tGroup=\tStartTime=1300\tEndTime=1400\tSuperAuthorize=0;",
+            "user_authorize_entry": "Pin=\tAuthorizeTimezoneId=56\tAuthorizeDoorId=41;"
+        }
+    ]
+}
