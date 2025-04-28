@@ -261,7 +261,7 @@ const Role = () => {
                         {selected.map((value) => (
                           <Chip
                             key={value}
-                            label={timezones.find((tz) => tz.TimezoneId === value)?.TimezoneName}
+                            label={new Date(timezones.find((tz) => tz.TimezoneId === value)?.startTime).toLocaleString() + ' - ' + new Date(timezones.find((tz) => tz.TimezoneId === value)?.endTime).toLocaleString()}
                           />
                         ))}
                       </Box>
@@ -269,7 +269,7 @@ const Role = () => {
                   >
                     {timezones.map((timezone) => (
                       <MenuItem key={timezone.TimezoneId} value={timezone.TimezoneId}>
-                        {timezone.TimezoneName}
+                        {new Date(timezone.startTime).toLocaleString()} - {new Date(timezone.endTime).toLocaleString()} 
                       </MenuItem>
                     ))}
                   </Select>
@@ -283,7 +283,14 @@ const Role = () => {
                     variant="outlined"
                   />
                 </FormControl>
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2, gap: 2 }}>
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    onClick={handleClose}
+                  >
+                    Close
+                  </Button>
                   <Button
                     variant="contained"
                     color="primary"

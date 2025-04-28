@@ -15,7 +15,7 @@ import AddRole from './role/AddRole';
 import Assignment from './assignment/Assignment';
 import AddAssignment from './assignment/AddAssignment';
 import Bracelet from './bracelet/Bracelet';
-
+import axiosInstance from '../../axiosInstance';
 const Dashboard = ({ onLogout }) => {
   const [username, setUsername] = useState('');
 
@@ -23,11 +23,7 @@ const Dashboard = ({ onLogout }) => {
     const fetchUserProfile = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://127.0.0.1:8000/user/profile/', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await axiosInstance.get('/user/profile/');
 
         if (response.status === 200) {
           setUsername(response.data.username); // Assuming `username` field is in the response

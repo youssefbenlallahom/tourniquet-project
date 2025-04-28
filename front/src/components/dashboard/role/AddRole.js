@@ -103,11 +103,14 @@ const AddRole = () => {
                   return tz ? `${new Date(tz?.startTime).toLocaleString()} - ${new Date(tz?.endTime).toLocaleString()}` : 'No timezone selected';
                 }}
               >
-                {timezones.map((timezone) => (
-                  <MenuItem key={timezone.TimezoneId} value={timezone.TimezoneId}>
-                    {new Date(timezone.startTime).toLocaleString()} - {new Date(timezone.endTime).toLocaleString()}
-                  </MenuItem>
-                ))}
+                {timezones.map((timezone) => {
+                  console.log(timezone)
+                  return (
+                    <MenuItem key={timezone.TimezoneId} value={timezone.TimezoneId}>
+                      {new Date(timezone.startTime).toLocaleString()} - {new Date(timezone.endTime).toLocaleString()} 
+                    </MenuItem>
+                  )
+                })}
               </Select>
             </FormControl>
 

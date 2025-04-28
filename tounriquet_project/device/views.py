@@ -76,6 +76,7 @@ def view_device(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_device(request):
+    print(request.data)
     serializer = DeviceSerializer(data=request.data)
     if not request.user.is_staff and not request.user.is_superuser and not request.user.can_manage_device:
         return Response({'error': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)

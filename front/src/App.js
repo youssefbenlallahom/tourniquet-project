@@ -18,6 +18,7 @@ import axiosInstance from './axiosInstance';
 import UpdateUser from './components/dashboard/UpdateProfile';
 
 const App = () => {
+
   const [isAuthenticated, setIsAuthenticated] = useState(
     () => JSON.parse(localStorage.getItem('isAuthenticated')) || false
   );
@@ -49,7 +50,8 @@ const App = () => {
 
   const handleLogout = () => {
     setIsAuthenticated(false);
-    localStorage.removeItem('token');
+    localStorage.removeItem('access');
+    localStorage.removeItem('refresh');
     localStorage.setItem('isAuthenticated', JSON.stringify(false));
   };
 

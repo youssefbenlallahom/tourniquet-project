@@ -68,6 +68,14 @@ def login(request):
     }, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
+def refresh(request):
+    """Refresh the access token."""
+    refresh_token = request.data.get("refresh")
+    if not refresh_token:
+        return Response({"detail": "Refresh token is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
 def register(request):
     """Register a new user."""
     serializer = UserSerializer(data=request.data)

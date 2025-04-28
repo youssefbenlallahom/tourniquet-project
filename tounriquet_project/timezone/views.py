@@ -20,6 +20,7 @@ def user_has_permission(user):
     return user.is_superuser or user.is_staff or user.can_manage_timezone
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def execute_tourniquet_command(request):
     try:
         # Exécuter la commande sans capturer la sortie

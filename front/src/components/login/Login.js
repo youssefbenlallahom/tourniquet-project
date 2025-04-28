@@ -21,7 +21,8 @@ const Login = ({ onLogin }) => {
       if (response.status === 200) {
         const { token } = response.data;
         localStorage.setItem('isAuthenticated', JSON.stringify(true));
-        localStorage.setItem('token', token.access);
+        localStorage.setItem('access', token.access);
+        localStorage.setItem('refresh', token.refresh);
         onLogin(true);
       } else {
         setError('Invalid credentials');

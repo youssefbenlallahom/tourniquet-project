@@ -1,0 +1,45 @@
+{
+    "name": "TEST",
+    "cardNo": "5555",
+    "pin": "4370",
+    "color": "blue",
+    "startHour": 230,
+    "numberOfHours": 2,
+    "isSuper": false,
+    "isAdmin": false,
+    "ChillRoom": {
+        "access": 0,
+        "startHour": 0,
+        "numberOfHours": 0
+    },
+    "GameOn": {
+        "access": 1,
+        "startHour": 230,
+        "numberOfHours": 2
+    },
+    "Office": {
+        "access": 0,
+        "startHour": 0,
+        "numberOfHours": 0
+    },
+    "Escape1": {
+        "access": 0,
+        "startHour": 0,
+        "numberOfHours": 0
+    },
+    "Escape2": {
+        "access": 0,
+        "startHour": 0,
+        "numberOfHours": 0
+    },
+    "Escape3": {
+        "access": 0,
+        "startHour": 0,
+        "numberOfHours": 0
+    },
+    "AxeThrowing": {
+        "access": 0,
+        "startHour": 0,
+        "numberOfHours": 0
+    }
+}

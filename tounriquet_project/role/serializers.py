@@ -10,6 +10,11 @@ class RoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Role
         fields = '__all__'
+class RoleCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Role
+        fields = '__all__'
 
 class UpdateRoleSerializer(serializers.ModelSerializer):
     access = serializers.PrimaryKeyRelatedField(many=True, queryset=Access.objects.all())

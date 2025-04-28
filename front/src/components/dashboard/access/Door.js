@@ -3,7 +3,7 @@ import {
   Box, Button, MenuItem, Select, TextField, Typography, Modal,
   FormControl, InputLabel
 } from '@mui/material';
-import axiosInstance from '../../../axiosInstance'; // Assurez-vous que vous avez importé axiosInstance
+import axiosInstance from '../../../axiosInstance';
 
 const Door = ({ open, onClose, onDoorAdded }) => {
   const [devices, setDevices] = useState([]);
