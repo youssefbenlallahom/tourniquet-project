@@ -1,14 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
 
-git add tourniquet_project/
+# Virtual Environment
+venv/
+ENV/
+env/
 
-git commit -m "backend commited"
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
 
-git add front/
+# Environment variables
+.env
+.env.local
 
-git commit -m "front commited"
+# Logs
+*.log
+logs/
 
-git add venv/
-
-git commit -m "venv commited"
-
-git push origin main
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
