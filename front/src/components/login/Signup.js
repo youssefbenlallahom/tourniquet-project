@@ -46,7 +46,7 @@ const Signup = () => {
                 <MDBCardBody className="p-md-5 mx-md-4">
                   <div className="text-center">
                     <img src="/assets/logo.png" style={{ width: '185px' }} alt="logo" />
-                    <h4 className="mt-1 mb-5 pb-1">Join JUMPARK Team</h4>
+                    <h4 className="mt-1 mb-5 pb-1" style={{ color: '#B30000', fontWeight: 'bold' }}>Join Game Production Team</h4>
                   </div>
                   <form>
                     <p>Create your account</p>

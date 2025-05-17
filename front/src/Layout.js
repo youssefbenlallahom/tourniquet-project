@@ -1,12 +1,19 @@
 import React from 'react';
-import './App.css'
+import { Box } from '@mui/material';
+import './App.css';
+
 const Layout = ({ children }) => {
   return (
-    <>
-      <div className="main-content">
-        {children}
-      </div>
-    </>
+    <Box 
+      sx={{ 
+        paddingTop: '1rem',
+        paddingBottom: '2rem',
+        minHeight: 'calc(100vh - 60px)',
+        background: '#f5f7fa'
+      }}
+    >
+      {children}
+    </Box>
   );
 };
 

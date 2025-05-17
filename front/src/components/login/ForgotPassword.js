@@ -44,7 +44,7 @@ const ForgotPassword = () => {
                 <MDBCardBody className="p-md-5 mx-md-4">
                   <div className="text-center">
                     <img src="/assets/logo.png" style={{ width: '185px' }} alt="logo" />
-                    <h4 className="mt-1 mb-5 pb-1">We are JUMPARK Team</h4>
+                    <h4 className="mt-1 mb-5 pb-1" style={{ color: '#B30000', fontWeight: 'bold' }}>We are Game Production Team</h4>
                   </div>
                   <form>
                     <p>Please enter your email or username to request a password reset.</p>

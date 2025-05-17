@@ -44,15 +44,9 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'corsheaders',
     'user',
-    'timezone',
-    'device',
-    'access',
-    'door',
-    'role',
     'assignment',
     'userRole',
-    'bracelet',
-  
+    'channels',
 ]
 CORS_ORIGIN_ALLOW_ALL = True
 AUTH_USER_MODEL = 'user.User'

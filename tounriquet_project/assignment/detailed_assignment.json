@@ -1,21 +1,21 @@
 {
-    "name": "TEST",
-    "cardNo": "5555",
-    "pin": "4370",
+    "name": "nadhmi",
+    "cardNo": "0009775697",
+    "pin": "",
     "color": "blue",
-    "startHour": 230,
-    "numberOfHours": 2,
-    "isSuper": false,
+    "isSuper": true,
     "isAdmin": false,
+    "startHour": 0,
+    "numberOfHours": 1,
     "ChillRoom": {
+        "access": 1,
+        "startHour": 0,
+        "numberOfHours": 1
+    },
+    "GameOn": {
         "access": 0,
         "startHour": 0,
         "numberOfHours": 0
-    },
-    "GameOn": {
-        "access": 1,
-        "startHour": 230,
-        "numberOfHours": 2
     },
     "Office": {
         "access": 0,

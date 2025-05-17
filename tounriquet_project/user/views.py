@@ -73,7 +73,13 @@ def refresh(request):
     refresh_token = request.data.get("refresh")
     if not refresh_token:
         return Response({"detail": "Refresh token is required."}, status=status.HTTP_400_BAD_REQUEST)
-
+    
+    try:
+        refresh = RefreshToken(refresh_token)
+        access_token = str(refresh.access_token)
+        return Response({"access": access_token}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"detail": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['POST'])
 def register(request):

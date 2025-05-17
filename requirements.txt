@@ -1,0 +1,33 @@
+# Django and Django REST framework
+django
+djangorestframework
+djangorestframework-simplejwt
+django-cors-headers
+
+# Date and time utilities
+pytz
+python-dateutil
+
+# Email utilities
+django-templated-email
+# Database
+# Uncomment if using PostgreSQL
+# psycopg2-binary==2.9.9
+
+# Environment variables
+python-dotenv
+
+# JWT token support
+PyJWT
+
+# Optional debugging tools
+django-debug-toolbar
+
+# Testing
+pytest
+pytest-django
+
+# Additional packages in the environment
+dateutils
+gevent
+greenlet

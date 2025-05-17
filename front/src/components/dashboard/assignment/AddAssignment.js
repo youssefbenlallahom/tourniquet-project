@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Button,
   TextField,
@@ -7,149 +7,142 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Chip,
   Stack,
   CircularProgress,
   Divider,
-  IconButton
+  FormHelperText,
+  Box,
+  IconButton,
+  Card,
+  CardContent,
+  CardHeader,
+  Grid,
+  Chip,
+  Container,
+  Paper
 } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { Add as AddIcon, Delete as DeleteIcon, ArrowBack as ArrowBackIcon, CalendarMonth, AccessTime } from '@mui/icons-material';
 import axiosInstance from '../../../axiosInstance';
 import Layout from '../../../Layout';
 import { useNavigate } from 'react-router-dom';
 
 const AddAssignment = () => {
-  const [roles, setRoles] = useState([]);
-  const [accesses, setAccesses] = useState([]);
-  const [timezones, setTimezones] = useState([]);
-  const [filteredTimezones, setFilteredTimezones] = useState([]);
   const [braceletId, setBraceletId] = useState('');
   const [color, setColor] = useState('');
   const [name, setName] = useState('');
-  const [selectedRole, setSelectedRole] = useState('');
-  const [selectedAccess, setSelectedAccess] = useState('');
-  const [selectedTimezone, setSelectedTimezone] = useState('');
-  const [accessTimezoneAssociations, setAccessTimezoneAssociations] = useState([]);
+  const [role, setRole] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
-  const formatDateTime = (dateTime) => {
-    if (!dateTime) return '';
-    const date = new Date(dateTime);
-    return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
-  };
+  // State for managing multiple access periods
+  const [accessPeriods, setAccessPeriods] = useState([
+    { access_type: '', startTime: null, endTime: null }
+  ]);
 
-  useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        const response = await axiosInstance.get('/role/all/');
-        setRoles(response.data);
-      } catch (error) {
-        console.error('Error fetching roles:', error);
+  // Access choices from the Django model
+  const ACCESS_CHOICES = [
+    {value: 'ChillRoom', label: 'ChillRoom'},
+    {value: 'GameOn', label: 'GameOn'},
+    {value: 'Office', label: 'Office'},
+    {value: 'Escape1', label: 'Escape1'},
+    {value: 'Escape2', label: 'Escape2'},
+    {value: 'Escape3', label: 'Escape3'},
+    {value: 'AxeThrowing', label: 'AxeThrowing'},
+  ];
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!braceletId) newErrors.braceletId = 'Bracelet ID is required';
+    if (!name) newErrors.name = 'Name is required';
+    if (!role) newErrors.role = 'Role is required';
+    
+    // Validate all access periods
+    const accessErrors = [];
+    let hasValidAccess = false;
+    
+    accessPeriods.forEach((period, index) => {
+      const periodErrors = {};
+      if (!period.access_type) periodErrors.access_type = 'Access type is required';
+      if (!period.startTime) periodErrors.startTime = 'Start Time is required';
+      if (!period.endTime) periodErrors.endTime = 'End Time is required';
+      
+      if (Object.keys(periodErrors).length > 0) {
+        accessErrors[index] = periodErrors;
+      } else {
+        hasValidAccess = true;
       }
-    };
-
-    const fetchAccesses = async () => {
-      try {
-        const response = await axiosInstance.get('/access/all/');
-        setAccesses(response.data);
-      } catch (error) {
-        console.error('Error fetching accesses:', error);
-      }
-    };
-
-    const fetchTimezones = async () => {
-      try {
-        const response = await axiosInstance.get('/timezone/all/');
-        setTimezones(response.data);
-        setFilteredTimezones(response.data);
-      } catch (error) {
-        console.error('Error fetching timezones:', error);
-      }
-    };
-
-    fetchRoles();
-    fetchAccesses();
-    fetchTimezones();
-  }, []);
-
-  useEffect(() => {
-    if (selectedAccess) {
-      const selectedAccessId = parseInt(selectedAccess, 10);
-      const relatedTimezones = timezones.filter((timezone) => {
-        const accessIds = timezone.access.map(a => a.id);
-        return accessIds.includes(selectedAccessId);
-      });
-      setFilteredTimezones(relatedTimezones);
-    } else {
-      setFilteredTimezones(timezones);
-    }
-  }, [selectedAccess, timezones]);
-
-  const handleAddAccess = () => {
-    if (selectedAccess && !accessTimezoneAssociations.some(association => association.accessId === parseInt(selectedAccess, 10))) {
-      setAccessTimezoneAssociations([...accessTimezoneAssociations, {
-        accessId: parseInt(selectedAccess, 10),
-        timezones: []
-      }]);
-      setSelectedAccess('');
-    }
-  };
-
-  const handleRemoveAccess = (accessId) => {
-    setAccessTimezoneAssociations(accessTimezoneAssociations.filter(association => association.accessId !== accessId));
-  };
-
-  const handleAddTimezone = () => {
-    if (selectedTimezone && accessTimezoneAssociations.length > 0) {
-      const updatedAssociations = accessTimezoneAssociations.map(association => {
-        if (association.accessId === parseInt(selectedAccess, 10)) {
-          return {
-            ...association,
-            timezones: [...association.timezones, parseInt(selectedTimezone, 10)]
-          };
-        }
-        return association;
-      });
-      setAccessTimezoneAssociations(updatedAssociations);
-      setSelectedTimezone('');
-    }
-  };
-
-  const handleRemoveTimezone = (accessId, timezoneId) => {
-    const updatedAssociations = accessTimezoneAssociations.map(association => {
-      if (association.accessId === accessId) {
-        return {
-          ...association,
-          timezones: association.timezones.filter(id => id !== timezoneId)
-        };
-      }
-      return association;
     });
-    setAccessTimezoneAssociations(updatedAssociations);
+    
+    if (!hasValidAccess) {
+      newErrors.accessPeriods = 'At least one valid access period is required';
+    }
+    
+    if (accessErrors.length > 0) {
+      newErrors.accessPeriodsDetails = accessErrors;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleAddAccessPeriod = () => {
+    setAccessPeriods([...accessPeriods, { access_type: '', startTime: null, endTime: null }]);
+  };
+
+  const handleRemoveAccessPeriod = (index) => {
+    if (accessPeriods.length > 1) {
+      const newPeriods = [...accessPeriods];
+      newPeriods.splice(index, 1);
+      setAccessPeriods(newPeriods);
+    }
+  };
+
+  const handleAccessPeriodChange = (index, field, value) => {
+    const newPeriods = [...accessPeriods];
+    newPeriods[index] = { ...newPeriods[index], [field]: value };
+    setAccessPeriods(newPeriods);
   };
 
   const handleAddAssignment = async () => {
+    if (!validateForm()) return;
+
     setLoading(true);
 
+    // Filter out incomplete access periods
+    const validAccessPeriods = accessPeriods.filter(
+      period => period.access_type && period.startTime && period.endTime
+    );
+
     const newAssignment = {
-      role: selectedRole || null,
       braceletId,
       color,
       name,
-      access_ids: accessTimezoneAssociations.map(association => association.accessId),
-      timezone_ids: accessTimezoneAssociations.flatMap(association => association.timezones)
+      role,
+      access_periods: validAccessPeriods
     };
 
     try {
-      const assignmentResponse = await axiosInstance.post('/assignment/create/', newAssignment);
-      if (assignmentResponse.status === 201) {
+      const response = await axiosInstance.post('/assignment/create/', newAssignment);
+      if (response.status === 201) {
         navigate('/dashboard/assignment');
       } else {
-        console.error('Failed to create assignment:', assignmentResponse.statusText);
+        console.error('Failed to create assignment:', response.statusText);
       }
     } catch (error) {
       console.error('Error:', error.response ? error.response.data : error.message);
+      // Display API errors
+      if (error.response && error.response.data) {
+        setErrors({
+          ...errors,
+          api: typeof error.response.data === 'string' 
+            ? error.response.data
+            : Object.values(error.response.data).flat().join(', ')
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -157,168 +150,358 @@ const AddAssignment = () => {
 
   return (
     <Layout>
-      <Typography variant="h5" gutterBottom color="#1976d2" sx={{ p: 4 }}>
-        Add Assignment
-      </Typography>
-      <Divider sx={{ mb: 4 }} />
+      <Container maxWidth="lg" sx={{ pb: 5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, mt: 2 }}>
+          <Button 
+            startIcon={<ArrowBackIcon />} 
+            onClick={() => navigate('/dashboard/assignment')}
+            sx={{ mr: 2, color: '#B30000' }}
+          >
+            Back to Assignments
+          </Button>
+          <Typography variant="h4" fontWeight="600" color="#0B1929">
+            Add New Assignment
+          </Typography>
+        </Box>
+        
+        <Divider sx={{ mb: 4 }} />
 
-      <TextField
-        label="Name"
-        fullWidth
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        sx={{ mb: 2 }}
-        variant="outlined"
-        color="primary"
-      />
-      <TextField
-        label="Bracelet ID"
-        fullWidth
-        value={braceletId}
-        onChange={(e) => setBraceletId(e.target.value)}
-        sx={{ mb: 2 }}
-        variant="outlined"
-        color="primary"
-      />
-      <TextField
-        label="Color"
-        fullWidth
-        value={color}
-        onChange={(e) => setColor(e.target.value)}
-        sx={{ mb: 2 }}
-        variant="outlined"
-        color="primary"
-      />
-      <FormControl fullWidth sx={{ mb: 2 }}>
-        <InputLabel>Role</InputLabel>
-        <Select
-          value={selectedRole}
-          onChange={(e) => setSelectedRole(e.target.value)}
-          variant="outlined"
-          color="primary"
+        <Paper 
+          elevation={2} 
+          sx={{ 
+            p: 4, 
+            borderRadius: 2,
+            background: 'white',
+            mb: 4
+          }}
         >
-          {roles.map((role) => (
-            <MenuItem key={role.id} value={role.id}>
-              {role.roleName}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-
-      <Typography variant="h6" gutterBottom color="#1976d2" sx={{ mb: 2 }}>
-        Add Access and Timezone
-      </Typography>
-      <Stack direction="row" spacing={1} sx={{ mb: 2 }} >
-        <FormControl size="small" sx={{ flex: 1 }}>
-          <InputLabel>Access</InputLabel>
-          <Select
-            value={selectedAccess}
-            onChange={(e) => setSelectedAccess(e.target.value)}
-            variant="outlined"
-            color="primary"
-            size="small"
-          >
-            {accesses.map((access) => (
-              <MenuItem key={access.id} value={access.id}>
-                {access.GameName}
-              </MenuItem>
-            ))}
-          </Select>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleAddAccess}
-            sx={{ mt: 1 }}
-            disabled={!selectedAccess}
-            size="small"
-          >
-            Add
-          </Button>
-        </FormControl>
-
-        <FormControl size="small" sx={{ flex: 1 }}>
-          <InputLabel>Timezone</InputLabel>
-          <Select
-  value={selectedTimezone}
-  onChange={(e) => setSelectedTimezone(e.target.value)}
-  variant="outlined"
-  color="primary"
-  size="small"
-  disabled={!selectedAccess}
->
-  {filteredTimezones.map((timezone) => (
-    <MenuItem key={timezone.TimezoneId} value={timezone.TimezoneId}>
-      {formatDateTime(timezone.startTime)} - {formatDateTime(timezone.endTime)}
-    </MenuItem>
-  ))}
-</Select>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleAddTimezone}
-            sx={{ mt: 1 }}
-            disabled={!selectedTimezone}
-            size="small"
-          >
-            Add
-          </Button>
-        </FormControl>
-      </Stack>
-
-      <Typography variant="h6" gutterBottom color="#1976d2" sx={{ mb: 2 }}>
-        Access and Timezone Associations
-      </Typography>
-      {accessTimezoneAssociations.length === 0 ? (
-        <Typography variant="body2" color="textSecondary">
-          No access and timezone associations added yet.
-        </Typography>
-      ) : (
-        accessTimezoneAssociations.map(association => (
-          <Stack key={association.accessId} mb={2} p={2} bgcolor="#f0f0f0" borderRadius="4px">
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <Typography variant="body1" fontWeight="bold">
-                Access {association.accessId}
+          {errors.api && (
+            <Box sx={{ mb: 3, p: 2, bgcolor: 'rgba(179, 0, 0, 0.1)', borderRadius: 1 }}>
+              <Typography color="error" variant="body2">
+                {errors.api}
               </Typography>
-              <IconButton
-                color="error"
-                onClick={() => handleRemoveAccess(association.accessId)}
-                size="small"
-              >
-                <DeleteIcon />
-              </IconButton>
-            </Stack>
-            <Stack direction="row" spacing={1} mt={1}>
-              {association.timezones.length === 0 ? (
-                <Typography variant="body2" color="textSecondary">
-                  No timezones added.
-                </Typography>
-              ) : (
-                association.timezones.map(timezoneId => {
-                  const timezone = timezones.find(tz => tz.TimezoneId === timezoneId);
-                  return timezone ? (
-                    <Chip
-                      key={timezone.TimezoneId}
-                      label={`${formatDateTime(timezone.startTime)} - ${formatDateTime(timezone.endTime)}`}
-                      onDelete={() => handleRemoveTimezone(association.accessId, timezone.TimezoneId)}
-                      deleteIcon={<DeleteIcon />}
-                    />
-                  ) : null;
-                })
-              )}
-            </Stack>
-          </Stack>
-        ))
-      )}
+            </Box>
+          )}
 
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={handleAddAssignment}
-        disabled={loading}
-        sx={{ mt: 3 }}
-      >
-        {loading ? <CircularProgress size={24} /> : 'Add Assignment'}
-      </Button>
+          <Card sx={{ mb: 4, borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+            <CardHeader 
+              title="Personal Information" 
+              sx={{ 
+                bgcolor: '#f5f5f5', 
+                borderBottom: '1px solid #e0e0e0',
+                '& .MuiCardHeader-title': {
+                  fontSize: '1.25rem',
+                  fontWeight: 600,
+                  color: '#0B1929'
+                }
+              }}
+            />
+            <CardContent sx={{ p: 3 }}>
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    label="Name"
+                    fullWidth
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    variant="outlined"
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        '&.Mui-focused fieldset': {
+                          borderColor: '#B30000',
+                        },
+                      },
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: '#B30000',
+                      },
+                    }}
+                    error={!!errors.name}
+                    helperText={errors.name}
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    label="Bracelet ID"
+                    fullWidth
+                    value={braceletId}
+                    onChange={(e) => setBraceletId(e.target.value)}
+                    variant="outlined"
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        '&.Mui-focused fieldset': {
+                          borderColor: '#B30000',
+                        },
+                      },
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: '#B30000',
+                      },
+                    }}
+                    error={!!errors.braceletId}
+                    helperText={errors.braceletId}
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    label="Color"
+                    fullWidth
+                    value={color}
+                    onChange={(e) => setColor(e.target.value)}
+                    variant="outlined"
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        '&.Mui-focused fieldset': {
+                          borderColor: '#B30000',
+                        },
+                      },
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: '#B30000',
+                      },
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    label="Role"
+                    fullWidth
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    variant="outlined"
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        '&.Mui-focused fieldset': {
+                          borderColor: '#B30000',
+                        },
+                      },
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: '#B30000',
+                      },
+                    }}
+                    error={!!errors.role}
+                    helperText={errors.role}
+                  />
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+
+          <Card sx={{ mb: 4, borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+            <CardHeader 
+              title="Access Periods" 
+              sx={{ 
+                bgcolor: '#f5f5f5', 
+                borderBottom: '1px solid #e0e0e0',
+                '& .MuiCardHeader-title': {
+                  fontSize: '1.25rem',
+                  fontWeight: 600,
+                  color: '#0B1929'
+                }
+              }}
+              action={
+                <Button 
+                  startIcon={<AddIcon />} 
+                  onClick={handleAddAccessPeriod}
+                  variant="contained"
+                  sx={{ 
+                    bgcolor: '#B30000',
+                    '&:hover': {
+                      bgcolor: '#8B0000'
+                    }
+                  }}
+                  size="small"
+                >
+                  Add Access
+                </Button>
+              }
+            />
+            <CardContent sx={{ p: 3 }}>
+              {errors.accessPeriods && (
+                <Typography color="error" variant="body2" sx={{ mb: 2 }}>
+                  {errors.accessPeriods}
+                </Typography>
+              )}
+              
+              <LocalizationProvider dateAdapter={AdapterDateFns}>
+                {accessPeriods.map((period, index) => (
+                  <Box 
+                    key={index} 
+                    sx={{ 
+                      mb: 3, 
+                      p: 3, 
+                      border: '1px solid #e0e0e0', 
+                      borderRadius: 2,
+                      position: 'relative',
+                      backgroundColor: index % 2 === 0 ? '#f9f9f9' : 'white',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                      transition: 'all 0.2s',
+                      '&:hover': {
+                        boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+                      }
+                    }}
+                  >
+                    <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+                      <Chip 
+                        label={`Access ${index + 1}`} 
+                        sx={{ 
+                          bgcolor: 'rgba(179, 0, 0, 0.1)', 
+                          color: '#B30000', 
+                          fontWeight: 500,
+                          borderColor: 'rgba(179, 0, 0, 0.3)'
+                        }} 
+                        variant="outlined" 
+                        size="small" 
+                      />
+                      {accessPeriods.length > 1 && (
+                        <IconButton
+                          onClick={() => handleRemoveAccessPeriod(index)}
+                          disabled={accessPeriods.length <= 1}
+                          sx={{ 
+                            position: 'absolute', 
+                            top: 8, 
+                            right: 8,
+                            color: accessPeriods.length <= 1 ? 'grey.400' : '#B30000',
+                            bgcolor: 'white',
+                            border: '1px solid #e0e0e0',
+                            '&:hover': {
+                              bgcolor: accessPeriods.length <= 1 ? 'white' : 'rgba(179, 0, 0, 0.1)',
+                            }
+                          }}
+                          size="small"
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      )}
+                    </Stack>
+                    
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} md={4}>
+                        <FormControl 
+                          fullWidth 
+                          error={!!errors.accessPeriodsDetails?.[index]?.access_type}
+                        >
+                          <InputLabel>Access Type</InputLabel>
+                          <Select
+                            value={period.access_type}
+                            onChange={(e) => handleAccessPeriodChange(index, 'access_type', e.target.value)}
+                            variant="outlined"
+                            sx={{
+                              '& .MuiOutlinedInput-notchedOutline': {
+                                borderColor: errors.accessPeriodsDetails?.[index]?.access_type ? 'error.main' : '#e0e0e0',
+                              },
+                              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                borderColor: '#B30000',
+                              },
+                            }}
+                          >
+                            {ACCESS_CHOICES.map((option) => (
+                              <MenuItem key={option.value} value={option.value}>
+                                {option.label}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                          {errors.accessPeriodsDetails?.[index]?.access_type && (
+                            <FormHelperText>{errors.accessPeriodsDetails[index].access_type}</FormHelperText>
+                          )}
+                        </FormControl>
+                      </Grid>
+                      <Grid item xs={12} md={4}>
+                        <DateTimePicker
+                          label="Start Time"
+                          value={period.startTime}
+                          onChange={(value) => handleAccessPeriodChange(index, 'startTime', value)}
+                          renderInput={(props) => (
+                            <TextField 
+                              {...props}
+                              fullWidth
+                              error={!!errors.accessPeriodsDetails?.[index]?.startTime}
+                              helperText={errors.accessPeriodsDetails?.[index]?.startTime || props.helperText}
+                              InputProps={{
+                                ...props.InputProps,
+                                startAdornment: <CalendarMonth sx={{ mr: 1, color: '#B30000', opacity: 0.7 }} />
+                              }}
+                              sx={{
+                                '& .MuiOutlinedInput-root': {
+                                  '&.Mui-focused fieldset': {
+                                    borderColor: '#B30000',
+                                  },
+                                },
+                                '& .MuiInputLabel-root.Mui-focused': {
+                                  color: '#B30000',
+                                }
+                              }}
+                            />
+                          )}
+                        />
+                      </Grid>
+                      <Grid item xs={12} md={4}>
+                        <DateTimePicker
+                          label="End Time"
+                          value={period.endTime}
+                          onChange={(value) => handleAccessPeriodChange(index, 'endTime', value)}
+                          renderInput={(props) => (
+                            <TextField 
+                              {...props}
+                              fullWidth
+                              error={!!errors.accessPeriodsDetails?.[index]?.endTime}
+                              helperText={errors.accessPeriodsDetails?.[index]?.endTime || props.helperText}
+                              InputProps={{
+                                ...props.InputProps,
+                                startAdornment: <AccessTime sx={{ mr: 1, color: '#B30000', opacity: 0.7 }} />
+                              }}
+                              sx={{
+                                '& .MuiOutlinedInput-root': {
+                                  '&.Mui-focused fieldset': {
+                                    borderColor: '#B30000',
+                                  },
+                                },
+                                '& .MuiInputLabel-root.Mui-focused': {
+                                  color: '#B30000',
+                                }
+                              }}
+                            />
+                          )}
+                        />
+                      </Grid>
+                    </Grid>
+                  </Box>
+                ))}
+              </LocalizationProvider>
+            </CardContent>
+          </Card>
+
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+            <Button
+              variant="outlined"
+              onClick={() => navigate('/dashboard/assignment')}
+              sx={{ 
+                mr: 2, 
+                borderColor: '#0B1929',
+                color: '#0B1929',
+                '&:hover': {
+                  borderColor: '#0B1929',
+                  bgcolor: 'rgba(11, 25, 41, 0.05)',
+                }
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleAddAssignment}
+              disabled={loading}
+              sx={{ 
+                bgcolor: '#B30000',
+                '&:hover': {
+                  bgcolor: '#8B0000'
+                },
+                minWidth: '150px',
+                boxShadow: '0 4px 8px rgba(179, 0, 0, 0.2)',
+              }}
+            >
+              {loading ? <CircularProgress size={24} color="inherit" /> : 'Create Assignment'}
+            </Button>
+          </Box>
+        </Paper>
+      </Container>
     </Layout>
   );
 };

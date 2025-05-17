@@ -1,58 +1,65 @@
 import React from 'react';
-import { Navbar, Nav, NavDropdown, Container } from 'react-bootstrap';
-import { FaUserCircle, FaSignOutAlt } from 'react-icons/fa';
+import { Box, Menu, MenuItem, Tooltip, Typography, AppBar, Toolbar } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { ExitToApp, Person } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 
-const CustomNavbar = styled(Navbar)(({ theme }) => ({
-  background: 'linear-gradient(90deg, #000000, #AB1E24)',
-  borderBottom: '2px solid #AB1E24',
-  width: 'calc(100% - 250px)',
-  marginLeft: '250px',
-  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-  position: 'fixed',
-  top: 0,
-  left: 0,
-  zIndex: 1030,
+const CustomAppBar = styled(AppBar)(({ theme }) => ({
+  background: 'linear-gradient(90deg, #0B1929, #B30000)',
+  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+  position: 'relative',
+  zIndex: 1100,
   height: '60px',
-  '& .navbar-nav .nav-link': {
-    color: '#f5f5f5 !important',
-    '&:hover': {
-      color: '#000000 !important',
-    },
-  },
-  '& .navbar-toggler': {
-    borderColor: '#AB1E24',
-  },
-  '& .navbar-toggler-icon': {
-    backgroundImage: 'url("data:image/svg+xml;charset=utf8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 30 30%22%3E%3Cpath stroke=%22%23AB1E24%22 stroke-width=%222%22 d=%22M0 7h30M0 15h30M0 23h30%22/%3E%3C/svg%3E")',
-  },
+  display: 'flex',
+  justifyContent: 'center'
 }));
 
-const CustomNavDropdown = styled(NavDropdown)(({ theme }) => ({
-  '& .dropdown-menu': {
-    backgroundColor: '#1c1c1c',
-    color: '#f5f5f5',
-    border: 'none',
-    borderRadius: '8px',
-    boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.3)',
-    transition: 'all 0.3s ease',
-    maxWidth: '300px',
-    right: 0,
-    left: 'auto',
-    overflow: 'hidden',
-    zIndex: 1040,
-  },
-  '& .dropdown-item': {
-    color: '#f5f5f5',
-    '&:hover': {
-      backgroundColor: '#AB1E24',
-      color: '#ffffff',
-    },
-  },
+const StyledToolbar = styled(Toolbar)({
+  display: 'flex',
+  justifyContent: 'space-between',
+  width: '100%',
+  padding: '0 16px',
+  minHeight: '60px'
+});
+
+const UserInfo = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  cursor: 'pointer',
+  padding: '4px 8px',
+  borderRadius: '4px',
+  '&:hover': {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  }
+});
+
+const ProfileIcon = styled(Box)(({ theme }) => ({
+  width: 36,
+  height: 36,
+  borderRadius: '50%',
+  backgroundColor: '#B30000',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  border: '2px solid white',
+  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+  marginLeft: '8px'
 }));
 
 const Header = ({ username, onLogout }) => {
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const navigate = useNavigate();
+  
+  const handleMenu = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
   const handleLogout = () => {
+    handleClose();
     if (typeof onLogout === 'function') {
       onLogout();
     } else {
@@ -61,30 +68,62 @@ const Header = ({ username, onLogout }) => {
   };
 
   return (
-    <CustomNavbar expand="lg" variant="dark">
-      <Container fluid>
-        {/* Content */}
-        <Navbar.Collapse id="navbar-nav" className="justify-content-end">
-          <Nav>
-            <CustomNavDropdown
-              title={<><FaUserCircle size={24} /> {username}</>}
-              id="profile-nav-dropdown"
-              alignRight
-            >
-              <NavDropdown.Item href="#profile">
-                <FaUserCircle size={18} className="me-2" />
-                Profile
-              </NavDropdown.Item>
-              <NavDropdown.Divider />
-              <NavDropdown.Item onClick={handleLogout}>
-                <FaSignOutAlt size={18} className="me-2" />
-                Logout
-              </NavDropdown.Item>
-            </CustomNavDropdown>
-          </Nav>
-        </Navbar.Collapse>
-      </Container>
-    </CustomNavbar>
+    <CustomAppBar elevation={0}>
+      <StyledToolbar>
+        <Box sx={{ flexGrow: 1 }}>
+          {/* Title or other elements could go here */}
+        </Box>
+        
+        <Tooltip title="Account settings">
+          <UserInfo onClick={handleMenu}>
+            <Box sx={{ textAlign: 'right' }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 'bold', lineHeight: 1.2, color: 'white' }}>
+                {username?.toUpperCase()}
+              </Typography>
+              <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', lineHeight: 1 }}>
+                ADMINISTRATOR
+              </Typography>
+            </Box>
+            <ProfileIcon>
+              <Person sx={{ fontSize: 22, color: 'white' }} />
+            </ProfileIcon>
+          </UserInfo>
+        </Tooltip>
+        
+        <Menu
+          id="menu-appbar"
+          anchorEl={anchorEl}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
+          }}
+          keepMounted
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          open={Boolean(anchorEl)}
+          onClose={handleClose}
+          PaperProps={{
+            sx: {
+              mt: 1.5,
+              backgroundColor: '#1A2A42',
+              color: 'white',
+              boxShadow: '0 8px 16px rgba(0,0,0,0.3)',
+              '& .MuiMenuItem-root': {
+                '&:hover': {
+                  backgroundColor: 'rgba(179, 0, 0, 0.1)',
+                },
+              },
+            },
+          }}
+        >
+          <MenuItem onClick={handleLogout}>
+            <ExitToApp sx={{ mr: 1, color: '#B30000' }} /> Logout
+          </MenuItem>
+        </Menu>
+      </StyledToolbar>
+    </CustomAppBar>
   );
 };
 
