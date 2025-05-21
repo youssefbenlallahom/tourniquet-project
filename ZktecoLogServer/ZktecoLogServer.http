@@ -1,0 +1,6 @@
+@ZktecoLogServer_HostAddress = http://localhost:5125
+
+GET {{ZktecoLogServer_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

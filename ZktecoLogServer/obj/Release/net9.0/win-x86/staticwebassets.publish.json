@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "YYFkc0ye7NcTp3YcwtOfE9qkuQDmoMhSc8ko6FIwru4=",
+  "Source": "ZktecoLogServer",
+  "BasePath": "_content/ZktecoLogServer",
+  "Mode": "Default",
+  "ManifestType": "Publish",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}

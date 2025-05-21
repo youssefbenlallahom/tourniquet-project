@@ -1,0 +1,11 @@
+C:\Users\3imed\Desktop\Log\ZktecoLogServer\bin\Release\net9.0\win-x86\publish\ZktecoLogServer.exe
+C:\Users\3imed\Desktop\Log\ZktecoLogServer\bin\Release\net9.0\win-x86\publish\appsettings.Development.json
+C:\Users\3imed\Desktop\Log\ZktecoLogServer\bin\Release\net9.0\win-x86\publish\appsettings.json
+C:\Users\3imed\Desktop\Log\ZktecoLogServer\bin\Release\net9.0\win-x86\publish\ZktecoLogServer.dll
+C:\Users\3imed\Desktop\Log\ZktecoLogServer\bin\Release\net9.0\win-x86\publish\ZktecoLogServer.deps.json
+C:\Users\3imed\Desktop\Log\ZktecoLogServer\bin\Release\net9.0\win-x86\publish\ZktecoLogServer.runtimeconfig.json
+C:\Users\3imed\Desktop\Log\ZktecoLogServer\bin\Release\net9.0\win-x86\publish\ZktecoLogServer.pdb
+C:\Users\3imed\Desktop\Log\ZktecoLogServer\bin\Release\net9.0\win-x86\publish\Microsoft.AspNetCore.OpenApi.dll
+C:\Users\3imed\Desktop\Log\ZktecoLogServer\bin\Release\net9.0\win-x86\publish\Microsoft.OpenApi.dll
+C:\Users\3imed\Desktop\Log\ZktecoLogServer\bin\Release\net9.0\win-x86\publish\Newtonsoft.Json.dll
+C:\Users\3imed\Desktop\Log\ZktecoLogServer\bin\Release\net9.0\win-x86\publish\System.Net.WebSockets.WebSocketProtocol.dll
